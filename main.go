@@ -11,5 +11,5 @@ package main
 import "C"
 
 func main() {
-	C.init()
+	C.ACFunction()
 }
