@@ -7,6 +7,8 @@ extern "C" {
 
 #include <stdint.h>
 
+extern void goCallbackHandler(); 
+
 void ACFunction();
 int init();
 int submitFastOperation(const char *json_fast_op);

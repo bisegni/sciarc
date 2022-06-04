@@ -9,6 +9,12 @@ package main
 #include <stdint.h>
 */
 import "C"
+import "fmt"
+
+//export goCallbackHandler
+func goCallbackHandler() {
+	fmt.Print("goCallbackHandler")
+}
 
 func main() {
 	C.ACFunction()
