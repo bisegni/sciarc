@@ -1,9 +1,12 @@
 cmake_minimum_required(VERSION 3.2)
 project(dcomp)
+IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  SET(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/local CACHE PATH "default install directory" FORCE)
+ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
 include(ExternalProject)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(BOOST_VERSION 1.77.0)
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/depinstall/lib)
@@ -30,7 +33,7 @@ ExternalProject_Add (
     BUILD_IN_SOURCE 1
     UPDATE_COMMAND ${BOOST_BOOTSTRAP_CMD}
     CONFIGURE_COMMAND ""
-    BUILD_COMMAND ${BOOST_BUILD_CMD} toolset=clang cxxflags=-stdlib=libc++ linkflags=-stdlib=libc++ --with-system --with-filesystem --with-thread --with-regex --with-iostreams link=static install --prefix=${CMAKE_CURRENT_BINARY_DIR}/depinstall
+    BUILD_COMMAND ${BOOST_BUILD_CMD} toolset=clang cxxflags=-stdlib=libc++ linkflags=-stdlib=libc++ --with-system --with-filesystem --with-thread --with-regex --with-iostreams link=static install --prefix=${CMAKE_INSTALL_PREFIX}
     INSTALL_COMMAND ""
     LOG_DOWNLOAD 1
     LOG_UPDATE 1
@@ -46,7 +49,7 @@ ExternalProject_Add(
 	 GIT_TAG release-1.8.0
      PREFIX "${CMAKE_CURRENT_BINARY_DIR}/gtest"
      CMAKE_ARGS
-      -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/depinstall
+      -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
      LOG_DOWNLOAD ON
      LOG_CONFIGURE ON
      LOG_BUILD ON
@@ -60,7 +63,7 @@ ExternalProject_Add (
     GIT_TAG v3.7.3
     GIT_PROGRESS 1
     BUILD_IN_SOURCE 1
-    CMAKE_ARGS  -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/depinstall
+    CMAKE_ARGS  -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
     LOG_DOWNLOAD 1
     LOG_UPDATE 1
     LOG_CONFIGURE 1
@@ -68,8 +71,8 @@ ExternalProject_Add (
     LOG_INSTALL 1
 )
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/depinstall/include)
-link_directories(${CMAKE_CURRENT_BINARY_DIR}/depinstall/lib)
+include_directories(${CMAKE_INSTALL_PREFIX}/include)
+link_directories(${CMAKE_INSTALL_PREFIX}/lib)
 
 set(SOURCE_FILES
     engine/src/dcomp.cpp)
@@ -101,6 +104,8 @@ ADD_DEPENDENCIES(unit_test boost jsonlibext googletest)
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${BUILD_LIBRARY})
 TARGET_LINK_LIBRARIES(unit_test ${BUILD_LIBRARY} gtest)
 
-enable_testing()
-add_test(NAME    unit_test 
-         COMMAND unit_test)
+
+MESSAGE(STATUS "Install prefix: ${CMAKE_INSTALL_PREFIX}")
+# enable_testing()
+# add_test(NAME    unit_test 
+#          COMMAND unit_test)

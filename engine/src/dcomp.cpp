@@ -14,7 +14,7 @@ void ACFunction() {
   goCallbackHandler();
 }
 
-int init() {}
+int init() {return 0;}
 
 int submitFastOperation(const char *json_fast_op) {
   int err = 0;
