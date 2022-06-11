@@ -71,8 +71,8 @@ ExternalProject_Add (
     LOG_INSTALL 1
 )
 
-message (STATUS "Setup CLING")
 IF(NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/cling)
+    MESSAGE (STATUS "Download cling")
     MESSAGE(STATUS "Create directory for cling download files")
     EXECUTE_PROCESS(
     COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/cling;
@@ -97,6 +97,7 @@ ExternalProject_Add(
     cling
     DOWNLOAD_COMMAND ""
     PREFIX "${CMAKE_BINARY_DIR}/cling"
+    SOURCE_DIR "${CMAKE_BINARY_DIR}/cling/src"
     CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
     LOG_DOWNLOAD ON
     LOG_UPDATE ON
@@ -114,8 +115,7 @@ set(SOURCE_FILES
 
 set(TEST_SOURCE_FILES
     engine/test/test.cpp)
-#ADD_EXECUTABLE(${PROJECT_NAME} ${SOURCE_FILES})
-#target_link_libraries(${PROJECT_NAME} ${CONAN_LIBS})
+
 ADD_LIBRARY(
     ${PROJECT_NAME} STATIC
     ${SOURCE_FILES}
@@ -131,7 +131,8 @@ SET(BUILD_LIBRARY ${BUILD_LIBRARY}
                     boost_thread
                     boost_filesystem
                     boost_regex
-                    boost_iostreams)
+                    boost_iostreams
+                    clingInterpreter)
 
 ADD_DEPENDENCIES(${PROJECT_NAME} boost jsonlibext cling)
 ADD_DEPENDENCIES(unit_test boost jsonlibext googletest)
