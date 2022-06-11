@@ -71,6 +71,41 @@ ExternalProject_Add (
     LOG_INSTALL 1
 )
 
+message (STATUS "Setup CLING")
+IF(NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/cling)
+    MESSAGE(STATUS "Create directory for cling download files")
+    EXECUTE_PROCESS(
+    COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/cling;
+    RESULT_VARIABLE err
+    OUTPUT_VARIABLE out
+    )
+
+    MESSAGE(STATUS "Executing ${PROJECT_SOURCE_DIR}/config/cling_clone.sh")
+    EXECUTE_PROCESS(
+    COMMAND ${PROJECT_SOURCE_DIR}/tools/cling_clone.sh ${CMAKE_CURRENT_BINARY_DIR}/cling;
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cling
+    RESULT_VARIABLE err
+    OUTPUT_VARIABLE out
+    )
+    IF(err)
+  	    MESSAGE(FATAL_ERROR "CANNOT create ${CMAKE_CURRENT_BINARY_DIR}/cling: ${err}")
+    ENDIF()
+ENDIF()
+
+MESSAGE(STATUS "setup cling")
+ExternalProject_Add(
+    cling
+    DOWNLOAD_COMMAND ""
+    PREFIX "${CMAKE_BINARY_DIR}/cling"
+    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
+    LOG_DOWNLOAD ON
+    LOG_UPDATE ON
+    LOG_PATCH ON
+    LOG_INSTALL ON
+    LOG_CONFIGURE ON
+    LOG_BUILD ON
+)
+
 include_directories(${CMAKE_INSTALL_PREFIX}/include)
 link_directories(${CMAKE_INSTALL_PREFIX}/lib)
 
@@ -98,7 +133,7 @@ SET(BUILD_LIBRARY ${BUILD_LIBRARY}
                     boost_regex
                     boost_iostreams)
 
-ADD_DEPENDENCIES(${PROJECT_NAME} boost jsonlibext)
+ADD_DEPENDENCIES(${PROJECT_NAME} boost jsonlibext cling)
 ADD_DEPENDENCIES(unit_test boost jsonlibext googletest)
 
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${BUILD_LIBRARY})
