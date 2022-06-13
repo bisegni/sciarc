@@ -9,7 +9,11 @@ package main
 #include <stdint.h>
 */
 import "C"
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/bisegni/dcomp/cmd"
+)
 
 //export goCallbackHandler
 func goCallbackHandler() {
@@ -17,5 +21,5 @@ func goCallbackHandler() {
 }
 
 func main() {
-	C.ACFunction()
+	cmd.Execute()
 }
