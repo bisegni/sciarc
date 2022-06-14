@@ -10,6 +10,9 @@ import (
 	"github.com/hashicorp/memberlist"
 )
 
+// void element in set
+type void struct{}
+
 // Message cluster exange message
 type Message struct {
 	Action string // add, del
@@ -26,7 +29,17 @@ type NodeClusterMetadata struct {
 	mtx        sync.RWMutex
 	items      map[string]string
 	broadcasts *memberlist.TransmitLimitedQueue
-	metadata   []byte `default:[]byte{}`
+	metadata   []byte
+	joinedNode map[string]*memberlist.Node
+}
+
+// GetJoinedNode return all joined node exclude current instance
+func (n *NodeClusterMetadata) GetJoinedNode() []string {
+	var ns = make([]string, 0)
+	for name := range n.joinedNode {
+		ns = append(ns, name)
+	}
+	return ns
 }
 
 func (n *NodeClusterMetadata) NodeMeta(limit int) []byte {
@@ -90,10 +103,16 @@ func (n *NodeClusterMetadata) MergeRemoteState(buf []byte, join bool) {
 }
 
 func (n *NodeClusterMetadata) NotifyJoin(node *memberlist.Node) {
+	if node.Name == n.name {
+		return
+	}
+	n.joinedNode[node.Name] = node
 	fmt.Println("A node has joined: " + node.String())
 }
 
 func (n *NodeClusterMetadata) NotifyLeave(node *memberlist.Node) {
+	//remove node from joind set
+	delete(n.joinedNode, node.Name)
 	fmt.Println("A node has left: " + node.String())
 }
 
@@ -110,10 +129,12 @@ type ClusterConfig struct {
 // Init cluster engine
 func Init(config *ClusterConfig) (*NodeClusterMetadata, error) {
 	var err error
-	var clusteNode = NodeClusterMetadata{}
-
 	hostname, _ := os.Hostname()
-	clusteNode.name = hostname + "-" + uuid.NewString()
+	var clusteNode = NodeClusterMetadata{
+		metadata:   []byte{},
+		name:       hostname + "-" + uuid.NewString(),
+		joinedNode: make(map[string]*memberlist.Node),
+	}
 
 	c := memberlist.DefaultLANConfig()
 	c.Events = &clusteNode
