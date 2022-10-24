@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.2)
-project(dcomp)
+project(sciarc)
 IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   SET(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/local CACHE PATH "default install directory" FORCE)
 ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
@@ -13,6 +13,22 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/depinstall/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/depinstall/lib)
 set(CMAKE_BINARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/depinstall/bin)
 option(BUILD_SHARED_LIBS "Build using shared libraries" off)
+
+set(SOURCE_FILES
+    engine/src/sciarc.cpp)
+
+set(TEST_SOURCE_FILES
+    engine/test/test.cpp)
+
+ADD_LIBRARY(
+    ${PROJECT_NAME} STATIC
+    ${SOURCE_FILES}
+    )
+
+ADD_EXECUTABLE(
+    unit_test
+    ${TEST_SOURCE_FILES}
+)
 
 message (STATUS "Setup Boost ${BOOST_VERSION}.")
 if (WIN32)
@@ -65,63 +81,47 @@ ExternalProject_Add(
 )
 ADD_DEPENDENCIES(unit_test googletest)
 
-IF(NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/cling)
-    MESSAGE (STATUS "Download cling")
-    MESSAGE(STATUS "Create directory for cling download files")
-    EXECUTE_PROCESS(
-    COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/cling;
-    RESULT_VARIABLE err
-    OUTPUT_VARIABLE out
-    )
+#IF(NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/cling)
+#    MESSAGE (STATUS "Download cling")
+#    MESSAGE(STATUS "Create directory for cling download files")
+#    EXECUTE_PROCESS(
+#    COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/cling;
+#    RESULT_VARIABLE err
+#    OUTPUT_VARIABLE out
+#    )
 
-    MESSAGE(STATUS "Executing ${PROJECT_SOURCE_DIR}/config/cling_clone.sh")
-    EXECUTE_PROCESS(
-    COMMAND ${PROJECT_SOURCE_DIR}/tools/cling_clone.sh ${CMAKE_CURRENT_BINARY_DIR}/cling;
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cling
-    RESULT_VARIABLE err
-    OUTPUT_VARIABLE out
-    )
-    IF(err)
-  	    MESSAGE(FATAL_ERROR "CANNOT create ${CMAKE_CURRENT_BINARY_DIR}/cling: ${err}")
-    ENDIF()
-ENDIF()
+#    MESSAGE(STATUS "Executing ${PROJECT_SOURCE_DIR}/config/cling_clone.sh")
+#    EXECUTE_PROCESS(
+#    COMMAND ${PROJECT_SOURCE_DIR}/tools/cling_clone.sh ${CMAKE_CURRENT_BINARY_DIR}/cling;
+#    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cling
+#    RESULT_VARIABLE err
+#    OUTPUT_VARIABLE out
+#    )
+#    IF(err)
+#  	    MESSAGE(FATAL_ERROR "CANNOT create ${CMAKE_CURRENT_BINARY_DIR}/cling: ${err}")
+#    ENDIF()
+#ENDIF()
 
-MESSAGE(STATUS "setup cling")
-ExternalProject_Add(
-    cling
-    DOWNLOAD_COMMAND ""
-    PREFIX "${CMAKE_BINARY_DIR}/cling"
-    SOURCE_DIR "${CMAKE_BINARY_DIR}/cling/src"
-    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
-    LOG_DOWNLOAD ON
-    LOG_UPDATE ON
-    LOG_PATCH ON
-    LOG_INSTALL ON
-    LOG_CONFIGURE ON
-    LOG_BUILD ON
-)
-ADD_DEPENDENCIES(${PROJECT_NAME} cling)
-ADD_DEPENDENCIES(unit_test cling)
-SET(BUILD_LIBRARY ${BUILD_LIBRARY}
-                    clingInterpreter)
+#MESSAGE(STATUS "setup cling")
+#ExternalProject_Add(
+#    cling
+#    DOWNLOAD_COMMAND ""
+#    PREFIX "${CMAKE_BINARY_DIR}/cling"
+#    SOURCE_DIR "${CMAKE_BINARY_DIR}/cling/src"
+#    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
+#    LOG_DOWNLOAD ON
+#    LOG_UPDATE ON
+#    LOG_PATCH ON
+#    LOG_INSTALL ON
+#    LOG_CONFIGURE ON
+#    LOG_BUILD ON
+#)
+#ADD_DEPENDENCIES(${PROJECT_NAME} cling)
+#ADD_DEPENDENCIES(unit_test cling)
+#SET(BUILD_LIBRARY ${BUILD_LIBRARY}
+#                    clingInterpreter)
 include_directories(${CMAKE_INSTALL_PREFIX}/include)
 link_directories(${CMAKE_INSTALL_PREFIX}/lib)
-
-set(SOURCE_FILES
-    engine/src/dcomp.cpp)
-
-set(TEST_SOURCE_FILES
-    engine/test/test.cpp)
-
-ADD_LIBRARY(
-    ${PROJECT_NAME} STATIC
-    ${SOURCE_FILES}
-    )
-
-ADD_EXECUTABLE(
-    unit_test
-    ${TEST_SOURCE_FILES}
-)
 
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${BUILD_LIBRARY})
 TARGET_LINK_LIBRARIES(unit_test ${BUILD_LIBRARY} gtest)
