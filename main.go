@@ -12,7 +12,7 @@ import "C"
 import (
 	"fmt"
 
-	"github.com/bisegni/dcomp/cmd"
+	"github.com/bisegni/sciarc/cmd"
 )
 
 //export goCallbackHandler

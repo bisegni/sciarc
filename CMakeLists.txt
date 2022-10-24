@@ -7,7 +7,7 @@ ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 include(ExternalProject)
 
 set(CMAKE_CXX_STANDARD 17)
-set(BOOST_VERSION 1.77.0)
+set(BOOST_VERSION 1.79.0)
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/depinstall/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/depinstall/lib)
@@ -42,6 +42,15 @@ ExternalProject_Add (
     LOG_INSTALL 1
     )
 
+SET(BUILD_LIBRARY ${BUILD_LIBRARY} 
+    boost_system
+    boost_thread
+    boost_filesystem
+    boost_regex
+    boost_iostreams)
+ADD_DEPENDENCIES(${PROJECT_NAME} boost)
+ADD_DEPENDENCIES(unit_test boost)
+
 message (STATUS "Setup GTest.")
 ExternalProject_Add(
      googletest
@@ -54,22 +63,7 @@ ExternalProject_Add(
      LOG_CONFIGURE ON
      LOG_BUILD ON
 )
-
-message (STATUS "Setup json library.")
-ExternalProject_Add (
-    jsonlibext
-    PREFIX ${CMAKE_CURRENT_BINARY_DIR}/json_lib
-    GIT_REPOSITORY https://github.com/nlohmann/json.git
-    GIT_TAG v3.7.3
-    GIT_PROGRESS 1
-    BUILD_IN_SOURCE 1
-    CMAKE_ARGS  -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
-    LOG_DOWNLOAD 1
-    LOG_UPDATE 1
-    LOG_CONFIGURE 1
-    LOG_BUILD 1
-    LOG_INSTALL 1
-)
+ADD_DEPENDENCIES(unit_test googletest)
 
 IF(NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/cling)
     MESSAGE (STATUS "Download cling")
@@ -106,7 +100,10 @@ ExternalProject_Add(
     LOG_CONFIGURE ON
     LOG_BUILD ON
 )
-
+ADD_DEPENDENCIES(${PROJECT_NAME} cling)
+ADD_DEPENDENCIES(unit_test cling)
+SET(BUILD_LIBRARY ${BUILD_LIBRARY}
+                    clingInterpreter)
 include_directories(${CMAKE_INSTALL_PREFIX}/include)
 link_directories(${CMAKE_INSTALL_PREFIX}/lib)
 
@@ -126,18 +123,7 @@ ADD_EXECUTABLE(
     ${TEST_SOURCE_FILES}
 )
 
-SET(BUILD_LIBRARY ${BUILD_LIBRARY} 
-                    boost_system
-                    boost_thread
-                    boost_filesystem
-                    boost_regex
-                    boost_iostreams
-                    clingInterpreter)
-
-ADD_DEPENDENCIES(${PROJECT_NAME} boost jsonlibext cling)
-ADD_DEPENDENCIES(unit_test boost jsonlibext googletest)
-
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${BUILD_LIBRARY})
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${BUILD_LIBRARY})
 TARGET_LINK_LIBRARIES(unit_test ${BUILD_LIBRARY} gtest)
 
 
