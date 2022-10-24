@@ -1,2 +1,2 @@
-# dcomp
-distributed computing made simple
+# sciarc
+Scientific Archiver made simple
