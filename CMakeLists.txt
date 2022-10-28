@@ -66,6 +66,27 @@ SET(BUILD_LIBRARY ${BUILD_LIBRARY}
     boost_iostreams)
 ADD_DEPENDENCIES(${PROJECT_NAME} boost)
 ADD_DEPENDENCIES(unit_test boost)
+#--------EPICS------
+ExternalProject_Add (
+    epics
+    PREFIX ${CMAKE_CURRENT_BINARY_DIR}/epics
+    GIT_REPOSITORY git@github.com:epics-base/epics-base.git
+    GIT_TAG R7.0.7
+    GIT_PROGRESS 1
+    BUILD_IN_SOURCE 1
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND  make -j 3  INSTALL_LOCATION=${CMAKE_INSTALL_PREFIX} install
+    INSTALL_COMMAND ""
+    LOG_DOWNLOAD 1
+    LOG_UPDATE 1
+    LOG_CONFIGURE 1
+    LOG_BUILD 1
+    LOG_INSTALL 1
+    )
+
+SET(BUILD_LIBRARY ${BUILD_LIBRARY} )
+ADD_DEPENDENCIES(${PROJECT_NAME} epics)
+ADD_DEPENDENCIES(unit_test epics)
 
 message (STATUS "Setup GTest.")
 ExternalProject_Add(
