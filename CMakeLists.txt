@@ -47,8 +47,9 @@ ExternalProject_Add (
     GIT_TAG boost-${BOOST_VERSION}
     GIT_PROGRESS 1
     BUILD_IN_SOURCE 1
+    GIT_SUBMODULES_RECURSE true
     UPDATE_COMMAND ${BOOST_BOOTSTRAP_CMD}
-    BUILD_COMMAND ${BOOST_BUILD_CMD} toolset=clang cxxflags=-stdlib=libc++ linkflags=-stdlib=libc++ --with-system --with-filesystem --with-thread --with-regex --with-iostreams link=static install --prefix=${CMAKE_INSTALL_PREFIX}
+    BUILD_COMMAND ${BOOST_BUILD_CMD} cxxflags=-stdlib=libc++ linkflags=-stdlib=libc++ --with-system --with-filesystem --with-thread --with-regex --with-iostreams link=static install --prefix=${CMAKE_INSTALL_PREFIX}
     INSTALL_COMMAND ""
     LOG_DOWNLOAD 1
     LOG_UPDATE 1
