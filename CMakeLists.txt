@@ -7,7 +7,7 @@ ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 include(ExternalProject)
 
 set(CMAKE_CXX_STANDARD 17)
-set(BOOST_VERSION 1.79.0)
+set(BOOST_VERSION 1.77.0)
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/depinstall/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/depinstall/lib)
@@ -48,7 +48,8 @@ ExternalProject_Add (
     GIT_PROGRESS 1
     BUILD_IN_SOURCE 1
     UPDATE_COMMAND ${BOOST_BOOTSTRAP_CMD}
-    CONFIGURE_COMMAND ""
+    PATCH_COMMAND sed -i "s/\#COMMANDLINE_LIBRARY = EPICS/COMMANDLINE_LIBRARY = EPICS/" ${CMAKE_BINARY_DIR}/ext_dep/epics-src/configure/os/CONFIG_SITE.Common.linux-x86_64
+    CONFIGURE_COMMAND sed -i "s/STATIC_BUILD=NO/STATIC_BUILD=YES/g" ${CMAKE_BINARY_DIR}/ext_dep/epics-src/configure/CONFIG_SITE
     BUILD_COMMAND ${BOOST_BUILD_CMD} toolset=clang cxxflags=-stdlib=libc++ linkflags=-stdlib=libc++ --with-system --with-filesystem --with-thread --with-regex --with-iostreams link=static install --prefix=${CMAKE_INSTALL_PREFIX}
     INSTALL_COMMAND ""
     LOG_DOWNLOAD 1
@@ -67,22 +68,21 @@ SET(BUILD_LIBRARY ${BUILD_LIBRARY}
 ADD_DEPENDENCIES(${PROJECT_NAME} boost)
 ADD_DEPENDENCIES(unit_test boost)
 #--------EPICS------
-ExternalProject_Add (
-    epics
-    PREFIX ${CMAKE_CURRENT_BINARY_DIR}/epics
-    GIT_REPOSITORY git@github.com:epics-base/epics-base.git
-    GIT_TAG R7.0.7
-    GIT_PROGRESS 1
-    BUILD_IN_SOURCE 1
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND  make -j 3  INSTALL_LOCATION=${CMAKE_INSTALL_PREFIX} install
-    INSTALL_COMMAND ""
-    LOG_DOWNLOAD 1
-    LOG_UPDATE 1
-    LOG_CONFIGURE 1
-    LOG_BUILD 1
-    LOG_INSTALL 1
-    )
+ExternalProject_Add(
+ 	 epics
+ 	 GIT_REPOSITORY https://github.com/epics-base/epics-base.git
+    GIT_TAG origin/7.0
+      GIT_PROGRESS 1
+      BUILD_IN_SOURCE 1
+      PATCH_COMMAND sed -i "s/\#COMMANDLINE_LIBRARY = EPICS/COMMANDLINE_LIBRARY = EPICS/" ${CMAKE_INSTALL_PREFIX}/epics/src/epics/configure/os/CONFIG_SITE.Common.linux-x86_64
+      CONFIGURE_COMMAND sed -i "s/STATIC_BUILD=NO/STATIC_BUILD=YES/g" ${CMAKE_INSTALL_PREFIX}/epics/src/epics/configure/CONFIG_SITE
+	UPDATE_COMMAND    ""
+	INSTALL_COMMAND   ""
+#      CONFIGURE_COMMAND "make -j 3 INSTALL_LOCATION=${CMAKE_INSTALL_PREFIX} install"
+#      BUILD_COMMAND "make -j 3 INSTALL_LOCATION=${CMAKE_INSTALL_PREFIX} install"
+    BUILD_COMMAND make -j 3  INSTALL_LOCATION=${CMAKE_INSTALL_PREFIX} install
+  )
+
 
 SET(BUILD_LIBRARY ${BUILD_LIBRARY} )
 ADD_DEPENDENCIES(${PROJECT_NAME} epics)
