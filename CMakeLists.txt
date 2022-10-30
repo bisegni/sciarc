@@ -48,8 +48,6 @@ ExternalProject_Add (
     GIT_PROGRESS 1
     BUILD_IN_SOURCE 1
     UPDATE_COMMAND ${BOOST_BOOTSTRAP_CMD}
-    PATCH_COMMAND sed -i "s/\#COMMANDLINE_LIBRARY = EPICS/COMMANDLINE_LIBRARY = EPICS/" ${CMAKE_BINARY_DIR}/ext_dep/epics-src/configure/os/CONFIG_SITE.Common.linux-x86_64
-    CONFIGURE_COMMAND sed -i "s/STATIC_BUILD=NO/STATIC_BUILD=YES/g" ${CMAKE_BINARY_DIR}/ext_dep/epics-src/configure/CONFIG_SITE
     BUILD_COMMAND ${BOOST_BUILD_CMD} toolset=clang cxxflags=-stdlib=libc++ linkflags=-stdlib=libc++ --with-system --with-filesystem --with-thread --with-regex --with-iostreams link=static install --prefix=${CMAKE_INSTALL_PREFIX}
     INSTALL_COMMAND ""
     LOG_DOWNLOAD 1
@@ -69,13 +67,14 @@ ADD_DEPENDENCIES(${PROJECT_NAME} boost)
 ADD_DEPENDENCIES(unit_test boost)
 #--------EPICS------
 ExternalProject_Add(
- 	 epics
- 	 GIT_REPOSITORY https://github.com/epics-base/epics-base.git
+ 	epics
+    PREFIX ${CMAKE_CURRENT_BINARY_DIR}/epics
+ 	GIT_REPOSITORY https://github.com/epics-base/epics-base.git
     GIT_TAG origin/7.0
       GIT_PROGRESS 1
       BUILD_IN_SOURCE 1
-      PATCH_COMMAND sed -i "s/\#COMMANDLINE_LIBRARY = EPICS/COMMANDLINE_LIBRARY = EPICS/" ${CMAKE_INSTALL_PREFIX}/epics/src/epics/configure/os/CONFIG_SITE.Common.linux-x86_64
-      CONFIGURE_COMMAND sed -i "s/STATIC_BUILD=NO/STATIC_BUILD=YES/g" ${CMAKE_INSTALL_PREFIX}/epics/src/epics/configure/CONFIG_SITE
+      PATCH_COMMAND sed -i "s/\#COMMANDLINE_LIBRARY = EPICS/COMMANDLINE_LIBRARY = EPICS/" ${CMAKE_CURRENT_BINARY_DIR}/epics/src/epics/configure/os/CONFIG_SITE.Common.linux-x86_64
+      CONFIGURE_COMMAND sed -i "s/STATIC_BUILD=NO/STATIC_BUILD=YES/g" ${CMAKE_CURRENT_BINARY_DIR}/epics/src/epics/configure/CONFIG_SITE
 	UPDATE_COMMAND    ""
 	INSTALL_COMMAND   ""
 #      CONFIGURE_COMMAND "make -j 3 INSTALL_LOCATION=${CMAKE_INSTALL_PREFIX} install"
