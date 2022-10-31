@@ -4,7 +4,7 @@
 #include <string>
 #include <stdio.h>
 #include <iostream>
-
+#include <boost/interprocess/sync/scoped_lock.hpp>
 #define CHECK_UUID(x) \
 boost::mutex::scoped_lock scoped_lock(_map_mutex); \
 if(map_submitted_query.find(std::string(x)) == map_submitted_query.end()) return -1; 
