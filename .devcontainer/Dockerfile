@@ -29,5 +29,5 @@ RUN apt -y install python3-pip
 RUN pip3 install conan
 
 RUN useradd -rm -d /home/vscode -s /bin/bash -g root -G sudo -u 1001 vscode
-USER vscode
+#USER vscode
 WORKDIR /home/vscode
