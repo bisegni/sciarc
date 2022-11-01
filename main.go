@@ -1,9 +1,9 @@
 package main
 
 /*
-#cgo CFLAGS: -I . -stdlib=libc++
-#cgo LDFLAGS: -L${SRCDIR}/build/depinstall/lib -ldcomp -lstdc++
-#include "engine/src/dcomp.h"
+#cgo CFLAGS: -I .
+#cgo LDFLAGS: -L${SRCDIR}/build/local/lib -ldcomp
+#include "${SRCDIR}/build/local/sciarc/sciarc.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
