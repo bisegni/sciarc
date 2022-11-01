@@ -7,28 +7,52 @@ ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 include(ExternalProject)
 
 set(CMAKE_CXX_STANDARD 17)
-set(BOOST_VERSION 1.79.0)
+set(BOOST_VERSION 1.77.0)
 
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/depinstall/lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/depinstall/lib)
-set(CMAKE_BINARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/depinstall/bin)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_INSTALL_PREFIX}/temp)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_INSTALL_PREFIX}/temp)
+set(CMAKE_BINARY_OUTPUT_DIRECTORY ${CMAKE_INSTALL_PREFIX}/temp)
 option(BUILD_SHARED_LIBS "Build using shared libraries" off)
 
 set(SOURCE_FILES
     engine/src/sciarc.cpp)
-
-set(TEST_SOURCE_FILES
-    engine/test/test.cpp)
-
 ADD_LIBRARY(
     ${PROJECT_NAME} STATIC
     ${SOURCE_FILES}
+    )
+SET_TARGET_PROPERTIES(${PROJECT_NAME} 
+                        PROPERTIES PUBLIC_HEADER 
+                        engine/src/sciarc.h
+                        )
+install(TARGETS ${PROJECT_NAME}
+        PUBLIC_HEADER
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/include/sciarc
+)
+install(TARGETS ${PROJECT_NAME}
+        #RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        #ARCHIVE DESTINATION lib/static
+        )
+
+TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PUBLIC ${CMAKE_INSTALL_PREFIX}/include)
+TARGET_LINK_DIRECTORIES(${PROJECT_NAME} PUBLIC ${CMAKE_INSTALL_PREFIX}/lib)
+
+set(TEST_SOURCE_FILES
+    engine/test/test.cpp
     )
 
 ADD_EXECUTABLE(
     unit_test
     ${TEST_SOURCE_FILES}
 )
+install(TARGETS unit_test
+        RUNTIME DESTINATION bin
+        #LIBRARY DESTINATION lib
+        #ARCHIVE DESTINATION lib/static
+        )
+
+TARGET_INCLUDE_DIRECTORIES(unit_test PUBLIC ${CMAKE_INSTALL_PREFIX}/include)
+TARGET_LINK_DIRECTORIES(unit_test PUBLIC ${CMAKE_INSTALL_PREFIX}/lib)
 
 message (STATUS "Setup Boost ${BOOST_VERSION}.")
 if (WIN32)
@@ -47,9 +71,9 @@ ExternalProject_Add (
     GIT_TAG boost-${BOOST_VERSION}
     GIT_PROGRESS 1
     BUILD_IN_SOURCE 1
+    GIT_SUBMODULES_RECURSE true
     UPDATE_COMMAND ${BOOST_BOOTSTRAP_CMD}
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND ${BOOST_BUILD_CMD} toolset=clang cxxflags=-stdlib=libc++ linkflags=-stdlib=libc++ --with-system --with-filesystem --with-thread --with-regex --with-iostreams link=static install --prefix=${CMAKE_INSTALL_PREFIX}
+    BUILD_COMMAND ${BOOST_BUILD_CMD} --with-system --with-filesystem --with-thread --with-regex --with-iostreams link=static install --prefix=${CMAKE_INSTALL_PREFIX}
     INSTALL_COMMAND ""
     LOG_DOWNLOAD 1
     LOG_UPDATE 1
@@ -66,7 +90,29 @@ SET(BUILD_LIBRARY ${BUILD_LIBRARY}
     boost_iostreams)
 ADD_DEPENDENCIES(${PROJECT_NAME} boost)
 ADD_DEPENDENCIES(unit_test boost)
+#--------EPICS------
+ExternalProject_Add(
+ 	epics
+    PREFIX ${CMAKE_CURRENT_BINARY_DIR}/epics
+ 	GIT_REPOSITORY https://github.com/epics-base/epics-base.git
+    GIT_TAG origin/7.0
+      GIT_PROGRESS 1
+      BUILD_IN_SOURCE 1
+      PATCH_COMMAND sed -i "s/\#COMMANDLINE_LIBRARY = EPICS/COMMANDLINE_LIBRARY = EPICS/" ${CMAKE_CURRENT_BINARY_DIR}/epics/src/epics/configure/os/CONFIG_SITE.Common.linux-x86_64
+      CONFIGURE_COMMAND sed -i "s/STATIC_BUILD=NO/STATIC_BUILD=YES/g" ${CMAKE_CURRENT_BINARY_DIR}/epics/src/epics/configure/CONFIG_SITE
+	UPDATE_COMMAND    ""
+	INSTALL_COMMAND   ""
+#      CONFIGURE_COMMAND "make -j 3 INSTALL_LOCATION=${CMAKE_INSTALL_PREFIX} install"
+#      BUILD_COMMAND "make -j 3 INSTALL_LOCATION=${CMAKE_INSTALL_PREFIX} install"
+    BUILD_COMMAND make -j 3  INSTALL_LOCATION=${CMAKE_INSTALL_PREFIX} install
+  )
 
+
+SET(BUILD_LIBRARY ${BUILD_LIBRARY} )
+ADD_DEPENDENCIES(${PROJECT_NAME} epics)
+ADD_DEPENDENCIES(unit_test epics)
+
+#--------Google Test------
 message (STATUS "Setup GTest.")
 ExternalProject_Add(
      googletest
@@ -81,51 +127,8 @@ ExternalProject_Add(
 )
 ADD_DEPENDENCIES(unit_test googletest)
 
-#IF(NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/cling)
-#    MESSAGE (STATUS "Download cling")
-#    MESSAGE(STATUS "Create directory for cling download files")
-#    EXECUTE_PROCESS(
-#    COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/cling;
-#    RESULT_VARIABLE err
-#    OUTPUT_VARIABLE out
-#    )
-
-#    MESSAGE(STATUS "Executing ${PROJECT_SOURCE_DIR}/config/cling_clone.sh")
-#    EXECUTE_PROCESS(
-#    COMMAND ${PROJECT_SOURCE_DIR}/tools/cling_clone.sh ${CMAKE_CURRENT_BINARY_DIR}/cling;
-#    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cling
-#    RESULT_VARIABLE err
-#    OUTPUT_VARIABLE out
-#    )
-#    IF(err)
-#  	    MESSAGE(FATAL_ERROR "CANNOT create ${CMAKE_CURRENT_BINARY_DIR}/cling: ${err}")
-#    ENDIF()
-#ENDIF()
-
-#MESSAGE(STATUS "setup cling")
-#ExternalProject_Add(
-#    cling
-#    DOWNLOAD_COMMAND ""
-#    PREFIX "${CMAKE_BINARY_DIR}/cling"
-#    SOURCE_DIR "${CMAKE_BINARY_DIR}/cling/src"
-#    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
-#    LOG_DOWNLOAD ON
-#    LOG_UPDATE ON
-#    LOG_PATCH ON
-#    LOG_INSTALL ON
-#    LOG_CONFIGURE ON
-#    LOG_BUILD ON
-#)
-#ADD_DEPENDENCIES(${PROJECT_NAME} cling)
-#ADD_DEPENDENCIES(unit_test cling)
-#SET(BUILD_LIBRARY ${BUILD_LIBRARY}
-#                    clingInterpreter)
-include_directories(${CMAKE_INSTALL_PREFIX}/include)
-link_directories(${CMAKE_INSTALL_PREFIX}/lib)
-
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${BUILD_LIBRARY})
-TARGET_LINK_LIBRARIES(unit_test ${BUILD_LIBRARY} gtest)
-
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${BUILD_LIBRARY} stdio)
+TARGET_LINK_LIBRARIES(unit_test PRIVATE ${BUILD_LIBRARY} gtest pthread)
 
 MESSAGE(STATUS "Install prefix: ${CMAKE_INSTALL_PREFIX}")
 # enable_testing()
