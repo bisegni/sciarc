@@ -30,6 +30,9 @@ ADD_EXECUTABLE(
     ${TEST_SOURCE_FILES}
 )
 
+include_directories(${CMAKE_INSTALL_PREFIX}/include)
+TARGET_LINK_DIRECTORIES(${PROJECT_NAME} PUBLIC ${CMAKE_INSTALL_PREFIX}/lib)
+TARGET_LINK_DIRECTORIES(unit_test PUBLIC ${CMAKE_INSTALL_PREFIX}/lib)
 
 message (STATUS "Setup Boost ${BOOST_VERSION}.")
 if (WIN32)
@@ -50,7 +53,7 @@ ExternalProject_Add (
     BUILD_IN_SOURCE 1
     GIT_SUBMODULES_RECURSE true
     UPDATE_COMMAND ${BOOST_BOOTSTRAP_CMD}
-    BUILD_COMMAND ${BOOST_BUILD_CMD} cxxflags=-stdlib=libc++ linkflags=-stdlib=libc++ --with-system --with-filesystem --with-thread --with-regex --with-iostreams link=static install --prefix=${CMAKE_INSTALL_PREFIX}
+    BUILD_COMMAND ${BOOST_BUILD_CMD} --with-system --with-filesystem --with-thread --with-regex --with-iostreams link=static install --prefix=${CMAKE_INSTALL_PREFIX}
     INSTALL_COMMAND ""
     LOG_DOWNLOAD 1
     LOG_UPDATE 1
@@ -89,6 +92,7 @@ SET(BUILD_LIBRARY ${BUILD_LIBRARY} )
 ADD_DEPENDENCIES(${PROJECT_NAME} epics)
 ADD_DEPENDENCIES(unit_test epics)
 
+#--------Google Test------
 message (STATUS "Setup GTest.")
 ExternalProject_Add(
      googletest
@@ -103,51 +107,8 @@ ExternalProject_Add(
 )
 ADD_DEPENDENCIES(unit_test googletest)
 
-#IF(NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/cling)
-#    MESSAGE (STATUS "Download cling")
-#    MESSAGE(STATUS "Create directory for cling download files")
-#    EXECUTE_PROCESS(
-#    COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/cling;
-#    RESULT_VARIABLE err
-#    OUTPUT_VARIABLE out
-#    )
-
-#    MESSAGE(STATUS "Executing ${PROJECT_SOURCE_DIR}/config/cling_clone.sh")
-#    EXECUTE_PROCESS(
-#    COMMAND ${PROJECT_SOURCE_DIR}/tools/cling_clone.sh ${CMAKE_CURRENT_BINARY_DIR}/cling;
-#    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cling
-#    RESULT_VARIABLE err
-#    OUTPUT_VARIABLE out
-#    )
-#    IF(err)
-#  	    MESSAGE(FATAL_ERROR "CANNOT create ${CMAKE_CURRENT_BINARY_DIR}/cling: ${err}")
-#    ENDIF()
-#ENDIF()
-
-#MESSAGE(STATUS "setup cling")
-#ExternalProject_Add(
-#    cling
-#    DOWNLOAD_COMMAND ""
-#    PREFIX "${CMAKE_BINARY_DIR}/cling"
-#    SOURCE_DIR "${CMAKE_BINARY_DIR}/cling/src"
-#    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
-#    LOG_DOWNLOAD ON
-#    LOG_UPDATE ON
-#    LOG_PATCH ON
-#    LOG_INSTALL ON
-#    LOG_CONFIGURE ON
-#    LOG_BUILD ON
-#)
-#ADD_DEPENDENCIES(${PROJECT_NAME} cling)
-#ADD_DEPENDENCIES(unit_test cling)
-#SET(BUILD_LIBRARY ${BUILD_LIBRARY}
-#                    clingInterpreter)
-include_directories(${CMAKE_INSTALL_PREFIX}/include)
-link_directories(${CMAKE_INSTALL_PREFIX}/lib)
-
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${BUILD_LIBRARY} stdio)
-TARGET_LINK_LIBRARIES(unit_test ${BUILD_LIBRARY} gtest)
-
+TARGET_LINK_LIBRARIES(unit_test PRIVATE ${BUILD_LIBRARY} gtest pthread)
 
 MESSAGE(STATUS "Install prefix: ${CMAKE_INSTALL_PREFIX}")
 # enable_testing()
