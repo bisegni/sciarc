@@ -7,6 +7,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/bisegni/sciarc/services"
 	"github.com/spf13/cobra"
 )
 
@@ -16,16 +17,19 @@ type NodeFlag struct {
 }
 
 var NodeFlags = &NodeFlag{}
+var node services.Node
 
 // nodeCmd represents the node command
 var nodeCmd = &cobra.Command{
-	Use:   "node",
-	Short: "Start a dcomp node",
-	Long: `A node is a part of a dcomp cluster, it can be a gateway or a worker node.:
+	Use:   "gateway",
+	Short: "Start a sciarc gateway node",
+	Long: `A gateway node is a part of a frontend sciarc cluster:
 
-Gateway is a management node and worker node is the node act to run code.`,
+Gateway is a management and user request central node`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("node called")
+		node = services.Node{}
+		node.Start()
 	},
 }
 
