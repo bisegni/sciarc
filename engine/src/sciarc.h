@@ -6,8 +6,7 @@ extern "C" {
 #endif
 
 #include <stdint.h>
-
-extern void goCallbackHandler(); 
+extern void goCallbackHandler();
 
 void ACFunction();
 int init();

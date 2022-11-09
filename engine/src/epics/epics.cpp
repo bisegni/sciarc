@@ -9,6 +9,6 @@ void EpicsChannel::connect() {
 }
 
 epics::pvData::PVStructure::const_shared_pointer
-EpicsChannel::get() {
+EpicsChannel::get() const {
     return channel->get();
 }

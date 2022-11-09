@@ -10,6 +10,5 @@ public:
 explicit EpicsChannel(const std::string& channel_name);
 ~EpicsChannel() = default;
 void connect();
-epics::pvData::PVStructure::const_shared_pointer
-get();
+epics::pvData::PVStructure::const_shared_pointer get() const;
 };
