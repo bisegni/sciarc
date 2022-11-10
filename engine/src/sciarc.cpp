@@ -7,6 +7,7 @@
 #include <boost/thread/mutex.hpp>
 #include <epics/epics.h>
 
+#include <stdint.h>
 boost::mutex io_mutex;
 
 void ACFunction() {
