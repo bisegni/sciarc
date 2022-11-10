@@ -105,7 +105,7 @@ ExternalProject_Add(
     GIT_TAG origin/7.0
       GIT_PROGRESS 1
       BUILD_IN_SOURCE 1
-      PATCH_COMMAND sed -i "s/\#COMMANDLINE_LIBRARY = EPICS/COMMANDLINE_LIBRARY = EPICS/" ${CMAKE_CURRENT_BINARY_DIR}/epics/src/epics/configure/os/CONFIG_SITE.Common.linux-x86_64
+      PATCH_COMMAND echo ${PROJECT_SOURCE_DIR}/patch_epics.sh
       CONFIGURE_COMMAND sed -i "s/STATIC_BUILD=NO/STATIC_BUILD=YES/g" ${CMAKE_CURRENT_BINARY_DIR}/epics/src/epics/configure/CONFIG_SITE
 	UPDATE_COMMAND    ""
 	INSTALL_COMMAND   ""
