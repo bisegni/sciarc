@@ -2,7 +2,7 @@ package main
 
 /*
 #cgo CFLAGS: -I .
-#cgo LDFLAGS: -Lbuild/local/lib -Lbuild/local/lib/linux-x86_64 -lsciarc -lpvaClient -lpvAccess -lca -lCom
+#cgo LDFLAGS: -Lbuild/local/lib -Lbuild/local/lib/linux-x86_64 -lsciarc -lpvaClient -lpvAccess -lpthread -lboost_system
 #include "build/local/include/sciarc/sciarc.h"
 #include <stdio.h>
 #include <stdlib.h>

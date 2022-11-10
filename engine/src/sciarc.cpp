@@ -10,7 +10,6 @@
 boost::mutex io_mutex;
 
 void ACFunction() {
-	printf("ACFunction\n");
   goCallbackHandler();
 }
 
