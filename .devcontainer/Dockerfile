@@ -24,6 +24,10 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 # Install llvm
 COPY ./llvm.sh /tmp/
 RUN chmod +x /tmp/llvm.sh && /tmp/llvm.sh
+RUN update-alternatives --install /usr/bin/cc cc /usr/bin/clang-14 100
+RUN update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-14 100
+RUN update-alternatives --install /usr/bin/clang cc /usr/bin/clang-14 100
+RUN update-alternatives --install /usr/bin/clang++ c++ /usr/bin/clang++-14 100
 
 RUN apt -y install python3-pip
 RUN pip3 install conan
