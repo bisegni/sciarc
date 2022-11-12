@@ -28,6 +28,7 @@ RUN update-alternatives --install /usr/bin/cc cc /usr/bin/clang-14 100
 RUN update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-14 100
 RUN update-alternatives --install /usr/bin/clang cc /usr/bin/clang-14 100
 RUN update-alternatives --install /usr/bin/clang++ c++ /usr/bin/clang++-14 100
+RUN update-alternatives --install /usr/bin/lldb lldb /usr/bin/lldb-14 100
 
 RUN apt -y install python3-pip
 RUN pip3 install conan

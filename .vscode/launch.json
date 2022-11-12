@@ -6,15 +6,11 @@
     "configurations": [
         {
             "name": "unit_test",
-            "type": "cppdbg",
+            "type": "lldb",
             "request": "launch",
             "program": "${workspaceFolder}/build/unit_test",
             "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/build/",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb"
+            "cwd": "${workspaceFolder}/build/"
         },
         {
             "name": "Sciarc Gateway",

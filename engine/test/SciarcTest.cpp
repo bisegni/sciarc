@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <sciarc/sciarc.h>
+#include <sciarc.h>
 
 //simulate the golang handler
 void goCallbackHandler() {
