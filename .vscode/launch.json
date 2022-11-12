@@ -10,7 +10,8 @@
             "request": "launch",
             "program": "${workspaceFolder}/build/unit_test",
             "args": [],
-            "cwd": "${workspaceFolder}/build/"
+            "cwd": "${workspaceFolder}/build/",
+            "preRunCommands": ["settings set target.disable-aslr false"]
         },
         {
             "name": "Sciarc Gateway",
