@@ -4,12 +4,13 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#include <stdint.h>
 
-extern void goCallbackHandler();
+extern void goCallbackHandler(char * channel_name, void *buff, int32_t buff_len);
 
 void ACFunction();
 int init();
-int submitFastOperation(const char *json_fast_op);
+int submitFastOperation(char *json_fast_op);
 void deinit();
 
 

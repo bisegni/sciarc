@@ -20,6 +20,7 @@
             "mode": "debug",
             "program": "${workspaceFolder}/main.go",
             "args": ["gateway"],
+            "env": {"CC":"clang","LD_LIBRARY_PATH":"$LD_LIBRRY_PATH:./build/local/lib/linux-x86_64"}
         }
     ]
 }

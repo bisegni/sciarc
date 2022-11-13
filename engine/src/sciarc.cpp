@@ -11,12 +11,14 @@
 boost::mutex io_mutex;
 
 void ACFunction() {
-  goCallbackHandler();
+  char name[] = "channle_name";
+  int a[5] = {1,2,3,4,5};
+  goCallbackHandler(name, a, 5);
 }
 
 int init() {return 0;}
 
-int submitFastOperation(const char *json_fast_op) {
+int submitFastOperation(char *json_fast_op) {
   int err = 0;
   boost::mutex::scoped_lock scoped_lock(io_mutex);
 

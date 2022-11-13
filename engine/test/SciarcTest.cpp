@@ -2,7 +2,7 @@
 #include <sciarc.h>
 
 //simulate the golang handler
-void goCallbackHandler() {
+void goCallbackHandler(char *channel_name, void *buff, int32_t buff_len) {
     int a = 0;
     a = a+1;
 }

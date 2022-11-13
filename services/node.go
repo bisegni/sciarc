@@ -3,6 +3,7 @@ package services
 import (
 	"log"
 
+	"github.com/bisegni/sciarc/services/epics"
 	"github.com/shuLhan/share/lib/debug"
 	"github.com/shuLhan/share/lib/websocket"
 )
@@ -41,6 +42,7 @@ func handleText(conn int, payload []byte) {
 	if err != nil {
 		log.Println("handleText: " + err.Error())
 	}
+	epics.MonitorChannel("channel_name")
 }
 
 func (n *Node) Start() {
