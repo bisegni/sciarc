@@ -145,7 +145,7 @@ ExternalProject_Add(
 ADD_DEPENDENCIES(unit_test googletest)
 
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC ${BUILD_LIBRARY} pvaClient pvAccess Com pvData pvDatabase pthread)
-TARGET_LINK_LIBRARIES(unit_test PUBLIC ${BUILD_LIBRARY} gtest sciarc )
+TARGET_LINK_LIBRARIES(unit_test PUBLIC ${BUILD_LIBRARY} gtest sciarc  pvAccessCA)
 
 MESSAGE(STATUS "Install prefix: ${CMAKE_INSTALL_PREFIX}")
 # enable_testing()

@@ -16,14 +16,14 @@ void ACFunction() {
   goCallbackHandler(name, a, 5);
 }
 
-int init() {return 0;}
+int init() {
+  EpicsChannel::init();
+  return 0;
+}
 
 int submitFastOperation(char *json_fast_op) {
   int err = 0;
-  boost::mutex::scoped_lock scoped_lock(io_mutex);
-
-  std::unique_ptr<EpicsChannel> pc = std::make_unique<EpicsChannel>("channel_name");
-  
+  boost::mutex::scoped_lock scoped_lock(io_mutex); 
   return err;
 }
 
