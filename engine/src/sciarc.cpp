@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <boost/thread/mutex.hpp>
-#include <epics/epics.h>
+#include <epics/EpicsChannel.h>
 
 #include <stdint.h>
 boost::mutex io_mutex;

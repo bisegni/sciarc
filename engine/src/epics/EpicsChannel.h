@@ -4,7 +4,7 @@
 #include <pva/client.h>
 class EpicsChannel {
     const std::string channel_name;
-    pvac::ClientProvider provider;
+    pvac::ClientProvider provider = pvac::ClientProvider("pva");
     std::unique_ptr<pvac::ClientChannel> channel;
 public:
 explicit EpicsChannel(const std::string& channel_name);

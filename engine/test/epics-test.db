@@ -1,0 +1,8 @@
+# The simplest record that 'does' something
+# and produces changing numbers
+record(calc, "test:data:random")
+{
+    field(SCAN, "1 second")
+    field(INPA, "10")
+    field(CALC, "RNDM*A")
+}

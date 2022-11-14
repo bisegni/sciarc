@@ -16,7 +16,7 @@ option(BUILD_SHARED_LIBS "Build using shared libraries" off)
 
 set(SOURCE_FILES
     engine/src/sciarc.cpp
-    engine/src/epics/epics.cpp
+    engine/src/epics/EpicsChannel.cpp
     )
 
 ADD_LIBRARY(
@@ -24,9 +24,13 @@ ADD_LIBRARY(
     ${SOURCE_FILES}
     )
 
+
 SET_TARGET_PROPERTIES(${PROJECT_NAME} 
-                        PROPERTIES PUBLIC_HEADER 
+                        PROPERTIES 
+                        PUBLIC_HEADER 
                         engine/src/sciarc.h
+                        PUBLIC_HEADER 
+                        engine/src/epics/epics.h
                         )
 install(TARGETS ${PROJECT_NAME}
         PUBLIC_HEADER
@@ -45,6 +49,7 @@ TARGET_LINK_DIRECTORIES(${PROJECT_NAME} PUBLIC ${CMAKE_INSTALL_PREFIX}/lib)
 set(TEST_SOURCE_FILES
     engine/test/test.cpp
     engine/test/SciarcTest.cpp
+    engine/test/Epics.cpp
     )
 
 ADD_EXECUTABLE(
