@@ -94,4 +94,5 @@ TEST(EpicsTest, ChannelMonitor) {
     EXPECT_EQ(fetched->at(0)->data->getSubField<epics::pvData::PVDouble>("value")->get(), 1);
     EXPECT_EQ(fetched->at(1)->type, MonitorType::Data);
     EXPECT_EQ(fetched->at(1)->data->getSubField<epics::pvData::PVDouble>("value")->get(), 2);
+    EXPECT_NO_THROW(pc_a->stopMonitor(););
 }
