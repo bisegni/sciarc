@@ -1,8 +1,20 @@
-# The simplest record that 'does' something
-# and produces changing numbers
-record(calc, "test:data:random")
+# Calculator test
+record(ao, "variable:a")
+{
+    field(DRVH, "100")
+    field(DOL, "0")
+    field(PINI, "YES")
+}
+record(ao, "variable:b")
+{
+    field(DRVH, "100")
+    field(DOL, "0")
+    field(PINI, "YES")
+}
+record(calc, "variable:sum")
 {
     field(SCAN, "1 second")
-    field(INPA, "10")
-    field(CALC, "RNDM*A")
+    field(INPA, "variable:a")
+    field(INPB, "variable:b")
+    field(CALC, "A+B")
 }
