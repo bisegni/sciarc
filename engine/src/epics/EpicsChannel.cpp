@@ -14,20 +14,24 @@ EpicsChannel::EpicsChannel(
 void EpicsChannel::init() {
     // "pva" provider automatically in registry
     // add "ca" provider to registry
-    epics::pvAccess::ca::CAClientFactory::start();
+    pva::ca::CAClientFactory::start();
 }
 
 void EpicsChannel::deinit() {
     // "pva" provider automatically in registry
     // add "ca" provider to registry
-    epics::pvAccess::ca::CAClientFactory::stop();
+    pva::ca::CAClientFactory::stop();
 }
 
 void EpicsChannel::connect() {
    channel = std::make_unique<pvac::ClientChannel>(provider.connect(channel_name));
 }
 
-epics::pvData::PVStructure::const_shared_pointer
-EpicsChannel::get() const {
+pvd::PVStructure::const_shared_pointer
+EpicsChannel::getData() const {
     return channel->get();
+}
+
+void EpicsChannel::putData(const std::string& name, const epics::pvData::AnyScalar& new_value) const{
+    channel->put().set(name, new_value).exec();
 }

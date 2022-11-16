@@ -16,10 +16,16 @@ class EpicsChannel {
 public:
 explicit EpicsChannel(
     const std::string& provider_name,
-    const std::string& channel_name);
+    const std::string& channel_name
+    );
 ~EpicsChannel() = default;
 static void init();
 static void deinit();
 void connect();
-epics::pvData::PVStructure::const_shared_pointer get() const;
+epics::pvData::PVStructure::const_shared_pointer getData() const;
+template<typename T >
+void putData(const std::string& name, T new_value) const {
+    channel->put().set(name, new_value).exec();
+}
+void putData(const std::string& name, const epics::pvData::AnyScalar& value) const;
 };
