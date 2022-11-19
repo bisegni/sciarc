@@ -6,9 +6,13 @@
 #include <iostream>
 #include <boost/thread/mutex.hpp>
 #include <epics/EpicsChannel.h>
-
+#include <map>
 #include <stdint.h>
-boost::mutex io_mutex;
+#include <thread>
+#include <mutex>
+
+std::map<std::string, std::string> channel_map;
+std::mutex channel_map_mutex;
 
 void ACFunction() {
   char name[] = "channle_name";
@@ -23,8 +27,13 @@ int init() {
 
 int submitFastOperation(char *json_fast_op) {
   int err = 0;
-  boost::mutex::scoped_lock scoped_lock(io_mutex); 
   return err;
+}
+
+char* getData(char *channel_name) {
+    std::lock_guard guard(channel_map_mutex);
+    char* out = (char*)calloc(256, sizeof(char));
+    return out;
 }
 
 void deinit() {}
