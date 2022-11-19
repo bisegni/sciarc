@@ -12,8 +12,9 @@ void ACFunction();
 int init();
 int submitFastOperation(char *json_fast_op);
 void deinit();
-
-
+char* getData(const char *channel_name);
+void startMonitr(const char *channel_name);
+void stopMonitr(const char *channel_name);
 #ifdef __cplusplus
 }
 #endif

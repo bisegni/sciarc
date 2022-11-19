@@ -11,7 +11,10 @@ TEST(SciarcTest, CallHandler) {
   ACFunction();
 }
 
-TEST(SciarcTest, SubmitFastThrow) {
-    //EXPECT_NO_THROW(submitFastOperation(nullptr););
+TEST(SciarcTest, GetData) {
+    auto value = getData("variable:sum");
+    EXPECT_NE(value, nullptr);
+    EXPECT_TRUE(strlen(value)>0);
+    std::free(value);
 }
   

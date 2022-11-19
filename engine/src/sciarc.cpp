@@ -11,6 +11,8 @@
 #include <thread>
 #include <mutex>
 
+namespace pvd = epics::pvData;
+
 std::map<std::string, std::string> channel_map;
 std::mutex channel_map_mutex;
 
@@ -30,10 +32,24 @@ int submitFastOperation(char *json_fast_op) {
   return err;
 }
 
-char* getData(char *channel_name) {
+char* getData(const char *channel_name) {
     std::lock_guard guard(channel_map_mutex);
-    char* out = (char*)calloc(256, sizeof(char));
+    std::ostringstream json;
+    auto channel = std::make_unique<EpicsChannel>("pva", std::string(channel_name));
+    channel->connect();
+    auto value = channel->getData();
+    if(!value) return nullptr;
+    value->dumpValue(json);
+    std::string str(json.str());
+    auto out = (char*)calloc(str.size(), sizeof(char));
+    strcpy(out, str.c_str());
     return out;
 }
 
+void startMonitr(const char *channel_name) {
+
+}
+void stopMonitr(const char *channel_name) {
+  
+}
 void deinit() {}
