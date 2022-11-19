@@ -64,7 +64,9 @@ MonitorEventVecShrdPtr EpicsChannel::monitor() {
         case pvac::MonitorEvent::Data:
             // We drain event FIFO completely
             while(mon.poll()) {
-                result->push_back(std::make_shared<MonitorEvent>(MonitorEvent{MonitorType::Data, channel_name, mon.event.message, mon.root}));
+                auto tmp_data = std::make_shared<epics::pvData::PVStructure>(mon.root->getStructure());
+                tmp_data->copy(*mon.root);
+                result->push_back(std::make_shared<MonitorEvent>(MonitorEvent{MonitorType::Data, channel_name, mon.event.message, tmp_data}));
             }
             break;
     }

@@ -84,11 +84,15 @@ TEST(EpicsTest, ChannelMonitor) {
     EXPECT_EQ(retry_eq(*pc_a, "value", 0, 500, 3), true);
 
     EXPECT_NO_THROW(pc_a->startMonitor(););
+    MonitorEventVecShrdPtr fetched = pc_a->monitor();
+    EXPECT_EQ(fetched->size(), 1);
+    EXPECT_EQ(fetched->at(0)->type, MonitorType::Data);
+    EXPECT_EQ(fetched->at(0)->data->getSubField<epics::pvData::PVDouble>("value")->get(), 0);
+
     EXPECT_NO_THROW(pc_a->putData("value", epics::pvData::AnyScalar(1)););
     EXPECT_NO_THROW(pc_a->putData("value", epics::pvData::AnyScalar(2)););
 
-    MonitorEventVecShrdPtr fetched = pc_a->monitor();
-    MonitorEventVecShrdPtr fetched_2 = pc_a->monitor();
+    fetched = pc_a->monitor();
     EXPECT_EQ(fetched->size(), 2);
     EXPECT_EQ(fetched->at(0)->type, MonitorType::Data);
     EXPECT_EQ(fetched->at(0)->data->getSubField<epics::pvData::PVDouble>("value")->get(), 1);

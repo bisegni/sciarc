@@ -16,7 +16,7 @@ using MonitorEvent = struct {
     MonitorType type;
     const std::string channel_name;
     const std::string message;
-    epics::pvData::PVStructure::const_shared_pointer data;
+    epics::pvData::PVStructure::shared_pointer data;
 };
 
 using MonitorEventVec = std::vector<std::shared_ptr<MonitorEvent>>;
