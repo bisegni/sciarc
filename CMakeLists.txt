@@ -24,22 +24,25 @@ ADD_LIBRARY(
     ${SOURCE_FILES}
     )
 
-
-SET_TARGET_PROPERTIES(${PROJECT_NAME} 
-                        PROPERTIES 
-                        PUBLIC_HEADER 
-                        engine/src/sciarc.h
-                        PUBLIC_HEADER 
-                        engine/src/epics/epics.h
-                        )
-install(TARGETS ${PROJECT_NAME}
-        PUBLIC_HEADER
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/include/sciarc
+file(GLOB_RECURSE SCIARC_INCLUDE "engine/src/*.h" "engine/src/epics/*.h")
+# SET_TARGET_PROPERTIES(${PROJECT_NAME} 
+#                         PROPERTIES 
+#                         PUBLIC_HEADER 
+#                         $SCIARC_INCLUDE
+#                         )
+# install(TARGETS ${PROJECT_NAME}
+#         PUBLIC_HEADER
+#         DESTINATION ${CMAKE_INSTALL_PREFIX}/include/sciarc
+# )
+set_target_properties(${PROJECT_NAME}
+    PROPERTIES
+    PUBLIC_HEADER "${SCIARC_INCLUDE}"
 )
 install(TARGETS ${PROJECT_NAME}
         #RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
-        #ARCHIVE DESTINATION lib/static
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION include/sciarc
         )
 
 TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PUBLIC engine/src)
@@ -144,8 +147,8 @@ ExternalProject_Add(
 )
 ADD_DEPENDENCIES(unit_test googletest)
 
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC ${BUILD_LIBRARY} pvaClient pvAccess Com pvData pvDatabase pthread)
-TARGET_LINK_LIBRARIES(unit_test PUBLIC ${BUILD_LIBRARY} gtest sciarc  pvAccessCA)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC ${BUILD_LIBRARY} pvaClient pvAccess Com pvData pvDatabase pvAccessCA pthread)
+TARGET_LINK_LIBRARIES(unit_test PUBLIC ${BUILD_LIBRARY} gtest sciarc )
 
 MESSAGE(STATUS "Install prefix: ${CMAKE_INSTALL_PREFIX}")
 # enable_testing()

@@ -30,19 +30,19 @@ func handleBin(conn int, payload []byte) {
 // handleText from websocket by echo-ing back the payload.
 func handleText(conn int, payload []byte) {
 	var (
-		packet []byte = websocket.NewFrameText(false, payload)
-		err    error
+		err error
 	)
 
 	if debug.Value >= 3 {
 		log.Printf("testdata/server: handleText: {payload.len:%d}\n", len(payload))
 	}
 
+	var value, _ = epics.GetChannelvalue(string(payload))
+	var packet []byte = websocket.NewFrameText(false, []byte(value))
 	err = websocket.Send(conn, packet)
 	if err != nil {
 		log.Println("handleText: " + err.Error())
 	}
-	epics.MonitorChannel("channel_name")
 }
 
 func (n *Node) Start() {

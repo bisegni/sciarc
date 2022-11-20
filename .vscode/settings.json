@@ -88,5 +88,9 @@
         "valarray": "cpp",
         "variant": "cpp",
         "*.ipp": "cpp"
+    },
+    "go.testEnvVars": {
+            "LOG_LEVEL": "debug",
+            "LD_LIBRRY_PATH": "$LD_LIBRRY_PATH:./build/local/lib/linux-x86_64"
     }
-}
+}  
