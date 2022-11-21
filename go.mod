@@ -8,6 +8,7 @@ require (
 	github.com/shuLhan/share v0.41.2
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.1
+	google.golang.org/protobuf v1.28.1
 )
 
 require (
