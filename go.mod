@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/memberlist v0.5.0
+	github.com/shettyh/threadpool v0.0.0-20200323115144-b99fd8aaa945
 	github.com/shuLhan/share v0.41.2
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.1

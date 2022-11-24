@@ -14,6 +14,18 @@ type Node struct {
 	age  int
 }
 
+// RequestSubmission ...
+type RequestSubmission struct {
+	conn_id     int32
+	result_type ResultType
+	result      interface{}
+	err         error
+}
+
+//Chasnnel for the request submission
+var submission_channel chan *RequestSubmission = make(chan *RequestSubmission)
+var result_channel chan *ApiResult = make(chan *ApiResult)
+
 // handleBin from websocket by echo-ing back the payload.
 func handleBin(conn int, payload []byte) {
 	var (
@@ -45,7 +57,26 @@ func handleText(conn int, payload []byte) {
 	}
 }
 
+func request_handler(submission_channel chan *RequestSubmission, result_channel chan *ApiResult) {
+	for {
+		select {
+		case <-quit:
+			println("stopping f1")
+			return
+		case request := <-submission_channel:
+			break
+		case answer := <-result_channel:
+			break
+		}
+	}
+}
+
 func (n *Node) Start() {
+	//òancu request goroutine
+	for i := 1; i <= 5; i++ {
+		request_handler(submission_channel, result_channel)
+	}
+
 	var opts = &websocket.ServerOptions{
 		Address:    "127.0.0.1:8000",
 		HandleBin:  handleBin,
