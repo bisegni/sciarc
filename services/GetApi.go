@@ -12,13 +12,14 @@ func (gaf GetApiFactory) Name() string {
 	return "get"
 }
 
-func (gaf GetApiFactory) BuildApiByString(conn_id int, conf *string) interface{} {
+func (gaf GetApiFactory) BuildApiByString(result_channel chan<- *ApiResult, conn_id int, conf *string) interface{} {
 	return &GetApi{
 		conn_id:      conn_id,
 		channel_name: conf,
+		res_chan:     result_channel,
 	}
 }
-func (gaf GetApiFactory) BuildApiByBinary(conn_id int, conf *[]byte) interface{} {
+func (gaf GetApiFactory) BuildApiByBinary(result_channel chan<- *ApiResult, conn_id int, conf *[]byte) interface{} {
 	return nil
 }
 
@@ -26,18 +27,18 @@ func (gaf GetApiFactory) BuildApiByBinary(conn_id int, conf *[]byte) interface{}
 type GetApi struct {
 	conn_id      int
 	channel_name *string
-	res_chan     chan *ApiResult
+	res_chan     chan<- *ApiResult
 }
 
 func (ga *GetApi) Run() {
-	var result ApiResult
+	var result *ApiResult
 	// Do your task here
-	value, err := epics.GetChannelvalue(ga.channel_name)
+	value, err := epics.GetChannelvalue(*ga.channel_name)
 	if err != nil {
-		result.err = err
+		result = &ApiResult{ga.conn_id, String, nil, err}
 	} else {
-		result.result_type = String
-		result.result = value
+		result = &ApiResult{ga.conn_id, String, &value, nil}
+
 	}
-	ga.res_chan <- &result
+	ga.res_chan <- result
 }

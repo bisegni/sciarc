@@ -28,8 +28,8 @@ type RequestSubmission struct {
 // ApiDefinition ...
 type ApiFactory interface {
 	Name() string
-	BuildApiByString(conn_id int, conf *string) interface{}
-	BuildApiByBinary(conn_id int, conf *[]byte) interface{}
+	BuildApiByString(result_channel chan<- *ApiResult, conn_id int, conf *string) interface{}
+	BuildApiByBinary(result_channel chan<- *ApiResult, conn_id int, conf *[]byte) interface{}
 }
 
 // Api result
@@ -123,7 +123,10 @@ func (ad *ApiDispatcher) getApiFromStringRequest(req *RequestSubmission) threadp
 		}
 	}
 	command_param_string := command_param.String()
-	return api_factory.BuildApiByString(req.conn_id, &command_param_string).(threadpool.Runnable)
+	return api_factory.BuildApiByString(
+		ad.result_channel,
+		req.conn_id,
+		&command_param_string).(threadpool.Runnable)
 }
 
 func (ad *ApiDispatcher) getApiFromBinaryRequest(req *RequestSubmission) threadpool.Runnable {
