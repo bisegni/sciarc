@@ -1,15 +1,41 @@
 package services
 
-import "sync"
+import (
+	"log"
+	"regexp"
+	"strings"
+	"sync"
 
-var submission_channel chan *RequestSubmission = make(chan *RequestSubmission)
-var result_channel chan *ApiResult = make(chan *ApiResult)
-var quit chan bool
+	"github.com/shettyh/threadpool"
+)
+
+type DataType int32
+
+const (
+	Binary DataType = iota
+	String
+)
+
+var command_regex, _ = regexp.Compile("(\\w*) ([a-zA-Z0-9 _\\-\\:]*)")
 
 // RequestSubmission ...
 type RequestSubmission struct {
-	conn_id     int32
-	result_type ResultType
+	conn_id      int
+	request_type DataType
+	data         interface{}
+}
+
+// ApiDefinition ...
+type ApiFactory interface {
+	Name() string
+	BuildApiByString(conn_id int, conf *string) interface{}
+	BuildApiByBinary(conn_id int, conf *[]byte) interface{}
+}
+
+// Api result
+type ApiResult struct {
+	conn_id     int
+	result_type DataType
 	result      interface{}
 	err         error
 }
@@ -23,7 +49,9 @@ type ApiDispatcher struct {
 	stringAnswerCallback func(id int, resutl *string)
 	binaryAnswerCallback func(id int, resutl *[]byte)
 
-	wg sync.WaitGroup
+	api_catalog map[string]ApiFactory
+	pool        *threadpool.ThreadPool
+	wg          sync.WaitGroup
 }
 
 // NewApiDispatcher ...
@@ -34,23 +62,34 @@ func NewApiDispatcher(thread_number int) (*ApiDispatcher, error) {
 		quit:                 make(chan bool),
 		stringAnswerCallback: nil,
 		binaryAnswerCallback: nil,
+		api_catalog:          make(map[string]ApiFactory),
+		pool:                 threadpool.NewThreadPool(1, 1000000),
 	}
 
 	d.start(thread_number)
 	return d, nil
 }
 
+// RegisterApi ...
+func (ad *ApiDispatcher) RegisterApi(def ApiFactory) error {
+	if _, ok := ad.api_catalog[def.Name()]; ok {
+		log.Printf("Api name %s has been already registered\n", def.Name())
+	}
+	ad.api_catalog[def.Name()] = def
+	return nil
+}
+
 // Start ...
 func (ad *ApiDispatcher) start(thread_number int) {
 	for i := 1; i <= thread_number; i++ {
 		ad.wg.Add(1)
-		go ad.requesthandler(ad.submission_channel, ad.result_channel)
+		go ad.requesthandler()
 	}
 }
 
 // Stop ...
 func (ad *ApiDispatcher) Stop() {
-	close(quit)
+	close(ad.quit)
 	ad.wg.Wait()
 }
 
@@ -62,28 +101,91 @@ func (ad *ApiDispatcher) SetBinaryAnswerHandler(callback func(id int, resutl *[]
 	ad.binaryAnswerCallback = callback
 }
 
-// ProcessStringRequest ...
-func (ad *ApiDispatcher) SubmitStringRequest(stringRequest string) error {
+func (ad *ApiDispatcher) getApiFromStringRequest(req *RequestSubmission) threadpool.Runnable {
+	command := req.data.(*string)
+	var command_param strings.Builder
+	var api_factory ApiFactory
+	var ok bool
+	match := command_regex.FindStringSubmatch(*command)
 
+	if len(match) == 1 {
+		log.Printf("the command '%s' is not well formed\n", *command)
+	}
+
+	if api_factory, ok = ad.api_catalog[match[1]]; !ok {
+		log.Printf("Api factory %s has not registered\n", match[1])
+		return nil
+	}
+
+	if len(match) > 2 {
+		for i := 2; i < len(match); i++ {
+			command_param.WriteString(match[i])
+		}
+	}
+	command_param_string := command_param.String()
+	return api_factory.BuildApiByString(req.conn_id, &command_param_string).(threadpool.Runnable)
+}
+
+func (ad *ApiDispatcher) getApiFromBinaryRequest(req *RequestSubmission) threadpool.Runnable {
+	return nil
+}
+
+// ProcessStringRequest ...
+func (ad *ApiDispatcher) processRequest(req *RequestSubmission) {
+	var api threadpool.Runnable
+	switch req.request_type {
+	case String:
+		{
+			api = ad.getApiFromStringRequest(req)
+			break
+		}
+	case Binary:
+		{
+			api = ad.getApiFromBinaryRequest(req)
+			break
+		}
+	}
+	if api != nil {
+		ad.pool.Execute(api)
+	}
 }
 
 // ProcessBinaryRequest ...
-func (ad *ApiDispatcher) SubmitBinaryRequest(binaryRequest []byte) error {
-
+func (ad *ApiDispatcher) SubmitRequest(req *RequestSubmission) error {
+	ad.submission_channel <- req
+	return nil
 }
 
 // requesthandler ...
-func (ad *ApiDispatcher) requesthandler(submission_channel chan *RequestSubmission, result_channel chan *ApiResult) {
+func (ad *ApiDispatcher) requesthandler() {
 	var work bool = true
 	for work {
 		select {
-		case <-quit:
+		case <-ad.quit:
 			work = false
 			return
-		case request := <-submission_channel:
-			break
-		case answer := <-result_channel:
-			break
+		case request := <-ad.submission_channel:
+			{
+				ad.processRequest(request)
+				break
+			}
+		case answer := <-ad.result_channel:
+			switch answer.result_type {
+			case Binary:
+				{
+					if ad.binaryAnswerCallback != nil {
+						ad.binaryAnswerCallback(int(answer.conn_id), answer.result.(*[]byte))
+					}
+					break
+				}
+			case String:
+				{
+					if ad.binaryAnswerCallback != nil {
+						ad.stringAnswerCallback(int(answer.conn_id), answer.result.(*string))
+					}
+					break
+				}
+			}
 		}
 	}
 	// signal exit

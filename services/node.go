@@ -2,6 +2,9 @@ package services
 
 import (
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/shuLhan/share/lib/websocket"
 )
@@ -13,25 +16,31 @@ type Node struct {
 
 // handleBin from websocket by echo-ing back the payload.
 func (n *Node) handleBin(conn int, payload []byte) {
-	err := n.dispatcher.SubmitBinaryRequest(payload)
+	err := n.dispatcher.SubmitRequest(
+		&RequestSubmission{
+			conn_id:      conn,
+			request_type: Binary,
+			data:         payload,
+		},
+	)
 	if err != nil {
-		log.Printf("Error submitting binary message: @", err)
+		log.Printf("Error submitting binary message: %s\n", err)
 	}
 }
 
 // handleText from websocket by echo-ing back the payload.
 func (n *Node) handleText(conn int, payload []byte) {
-	err := n.dispatcher.SubmitStringRequest(string(payload))
+	var command = string(payload)
+	err := n.dispatcher.SubmitRequest(
+		&RequestSubmission{
+			conn_id:      conn,
+			request_type: String,
+			data:         &command,
+		},
+	)
 	if err != nil {
-		log.Printf("Error submitting text message: @", err)
+		log.Printf("Error submitting text message: %s\n", err)
 	}
-
-	//var value, _ = epics.GetChannelvalue(string(payload))
-	// var packet []byte = websocket.NewFrameText(false, []byte(value))
-	// err = websocket.Send(conn, packet)
-	// if err != nil {
-	// 	log.Println("handleText: " + err.Error())
-	// }
 }
 
 func (n *Node) stringAnswer(conn int, resutl *string) {
@@ -52,7 +61,10 @@ func (n *Node) binaryAnswer(conn int, resutl *[]byte) {
 
 func (n *Node) Start() error {
 	var err error
-	n.dispatcher, err = NewApiDispatcher(4)
+	c := make(chan os.Signal)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+
+	n.dispatcher, err = NewApiDispatcher(1)
 	if err != nil {
 		return err
 	}
@@ -60,13 +72,20 @@ func (n *Node) Start() error {
 	n.dispatcher.SetStringAnswerHandler(n.stringAnswer)
 	n.dispatcher.SetBinaryAnswerHandler(n.binaryAnswer)
 
+	n.dispatcher.RegisterApi(GetApiFactory{})
+
 	var opts = &websocket.ServerOptions{
 		Address:    "127.0.0.1:8000",
 		HandleBin:  n.handleBin,
 		HandleText: n.handleText,
 	}
 	var srv = websocket.NewServer(opts)
+	go func() {
+		<-c
+		srv.Stop()
+	}()
 
 	srv.Start()
+	n.dispatcher.Stop()
 	return nil
 }
