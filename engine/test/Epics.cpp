@@ -111,5 +111,11 @@ void handler(const MonitorEventVecShrdPtr& event_data) {
 
 TEST(EpicsTest, EpicsChannelMonitor) {
     std::unique_ptr<EpicsChannelMonitor> monitor = std::make_unique<EpicsChannelMonitor>();
-    
+
+    EXPECT_NO_THROW(monitor->setHandler(std::bind(handler, std::placeholders::_1)););
+    EXPECT_NO_THROW(monitor->addChannel("variable:sum"););
+    EXPECT_NO_THROW(monitor->start(););
+    std::this_thread::sleep_for(std::chrono::microseconds(1000));
+    EXPECT_NO_THROW(monitor->stop(););
+    EXPECT_EQ(allEvent.size() > 0, true);
 }

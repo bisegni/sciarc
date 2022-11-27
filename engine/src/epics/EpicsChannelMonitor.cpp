@@ -14,12 +14,13 @@ void EpicsChannelMonitor::stop() {
 
 void EpicsChannelMonitor::addChannel(const std::string& channel_name) {
     std::lock_guard guard(channel_map_mutex);
-    if (auto search = channel_map.find(channel_name); search == channel_map.end()) {
+    if (auto search = channel_map.find(channel_name); search != channel_map.end()) {
         return;
     }
 
     channel_map[channel_name] = std::make_shared<EpicsChannel>("pva", channel_name);
     channel_map[channel_name]->connect();
+    channel_map[channel_name]->startMonitor();
 }
 
 void EpicsChannelMonitor::removeChannel(const std::string& channel_name) {
@@ -41,6 +42,7 @@ void EpicsChannelMonitor::processIterator(const std::shared_ptr<EpicsChannel>& e
 
 void EpicsChannelMonitor::task() {
     std::shared_ptr<EpicsChannel> current_channel;
+    EpicsChannelMapIterator cur_iter = channel_map.end();
     while(run) {
         // lock and increment iterator 
         {
@@ -50,7 +52,7 @@ void EpicsChannelMonitor::task() {
             } else {
                 cur_iter++;
             }
-            if(cur_iter == channel_map.end()) {
+            if(cur_iter != channel_map.end()) {
                 current_channel = cur_iter->second;
             }
         }

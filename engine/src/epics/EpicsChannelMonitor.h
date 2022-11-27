@@ -13,7 +13,6 @@ class EpicsChannelMonitor {
     std::map<std::string, std::shared_ptr<EpicsChannel>> channel_map;
     std::unique_ptr<std::thread> scheduler_thread;
     std::function<void(const MonitorEventVecShrdPtr& event_data)> data_handler;
-    EpicsChannelMapIterator cur_iter = channel_map.end();
     bool run = false;
     void task();
     void processIterator(const std::shared_ptr<EpicsChannel>& epics_channel);
