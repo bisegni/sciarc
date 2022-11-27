@@ -4,7 +4,6 @@
 #include <string>
 #include <stdio.h>
 #include <iostream>
-#include <boost/thread/mutex.hpp>
 #include <epics/EpicsChannel.h>
 #include <map>
 #include <stdint.h>

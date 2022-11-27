@@ -17,6 +17,7 @@ option(BUILD_SHARED_LIBS "Build using shared libraries" off)
 set(SOURCE_FILES
     engine/src/sciarc.cpp
     engine/src/epics/EpicsChannel.cpp
+    engine/src/epics/EpicsChannelMonitor.cpp
     )
 
 ADD_LIBRARY(

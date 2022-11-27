@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <epics/EpicsChannel.h>
+#include <epics/EpicsChannelMonitor.h>
 #include <thread>
 #include <chrono>
 TEST(EpicsTest, ChannelFault) {
@@ -99,4 +100,16 @@ TEST(EpicsTest, ChannelMonitor) {
     EXPECT_EQ(fetched->at(1)->type, MonitorType::Data);
     EXPECT_EQ(fetched->at(1)->data->getSubField<epics::pvData::PVDouble>("value")->get(), 2);
     EXPECT_NO_THROW(pc_a->stopMonitor(););
+}
+
+MonitorEventVec allEvent;
+std::mutex check_result_mutex;
+void handler(const MonitorEventVecShrdPtr& event_data) {
+    std::lock_guard guard(check_result_mutex);
+    allEvent.insert(allEvent.end(), (*event_data).begin(), (*event_data).end());
+}
+
+TEST(EpicsTest, EpicsChannelMonitor) {
+    std::unique_ptr<EpicsChannelMonitor> monitor = std::make_unique<EpicsChannelMonitor>();
+    
 }

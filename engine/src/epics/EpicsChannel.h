@@ -1,3 +1,6 @@
+#ifndef EpicsChannel_H
+#define EpicsChannel_H
+
 #include <cadef.h>
 #include <string>
 #include <memory>
@@ -50,3 +53,4 @@ void startMonitor();
 MonitorEventVecShrdPtr monitor();
 void stopMonitor();
 };
+#endif
