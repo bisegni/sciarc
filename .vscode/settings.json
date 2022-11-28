@@ -90,7 +90,14 @@
         "*.ipp": "cpp"
     },
     "go.testEnvVars": {
-            "LOG_LEVEL": "debug",
-            "LD_LIBRRY_PATH": "$LD_LIBRRY_PATH:./build/local/lib/linux-x86_64"
+        "LOG_LEVEL": "debug",
+        "LD_LIBRRY_PATH": "$LD_LIBRRY_PATH:./build/local/lib/linux-x86_64"
+    },
+    "go.testEnvFile": "",
+    "terminal.integrated.env.osx": {
+        "LD_LIBRRY_PATH": "$LD_LIBRRY_PATH:./build/local/lib/linux-x86_64"
+    },
+    "go.toolsEnvVars": {
+        "LD_LIBRRY_PATH": "$LD_LIBRRY_PATH:./build/local/lib/linux-x86_64"
     }
 }  

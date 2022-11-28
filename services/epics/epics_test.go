@@ -13,6 +13,11 @@ func TestGetData(t *testing.T) {
 }
 
 func TestMonitor(t *testing.T) {
-	StartChannelMonitor("variable:sum")
+	data_channel := make(chan *EpicsEventData)
+
+	StartChannelMonitor("variable:sum", data_channel)
+
+	eventData := <-data_channel
+	assert.NotNil(t, eventData, "Data need to be non null")
 	StopChannelMonitor("variable:sum")
 }

@@ -9,6 +9,7 @@ require (
 	github.com/shuLhan/share v0.41.2
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.1
+	golang.org/x/exp v0.0.0-20221126150942-6ab00d035af9
 	google.golang.org/protobuf v1.28.1
 )
 
@@ -31,7 +32,7 @@ require (
 	golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90 // indirect
 	golang.org/x/net v0.0.0-20220907135653-1e95f45603a7 // indirect
 	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4 // indirect
-	golang.org/x/sys v0.0.0-20220908164124-27713097b956 // indirect
+	golang.org/x/sys v0.1.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

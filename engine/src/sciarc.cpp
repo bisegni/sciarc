@@ -28,7 +28,8 @@ void eventHandler(const MonitorEventVecShrdPtr& event_data) {
   for(auto& iter: *event_data) {
     std::string json_str;
     std::ostringstream json;
-    epics::pvData::printJSON(json, *iter->data);
+    //epics::pvData::printJSON(json, *iter->data);
+    iter->data->dumpValue(json);
     json_str = json.str();
     
     auto out = (char*)calloc(json_str.size(), sizeof(char));
@@ -57,7 +58,8 @@ char* getData(const char *channel_name) {
     channel->connect();
     auto value = channel->getData();
     if(!value) return nullptr;
-    epics::pvData::printJSON(json, *value);
+    //epics::pvData::printJSON(json, value);
+    value->dumpValue(json);
     std::string str(json.str());
     auto out = (char*)calloc(str.size(), sizeof(char));
     strcpy(out, str.c_str());

@@ -11,40 +11,69 @@ package epics
 import "C"
 import (
 	"fmt"
+	"sync"
 	"unsafe"
 )
 
+var mtx sync.RWMutex
+var epicsMonitorChannel = make(map[string]chan<- *EpicsEventData)
+var ErrorChannelAlreadyRegistered = fmt.Errorf("channel alredy registered")
+
 // EventData the data emitted by event monitor
-type EventData struct {
-	channel string
-	data    []byte
-	len     int32
+type EpicsEventData struct {
+	Channel string
+	Data    []byte
+	Len     int32
+}
+
+func init() {
+	C.init()
 }
 
 //export goCallbackHandler
 func goCallbackHandler(channel_name *C.char, buf unsafe.Pointer, len C.int) {
-	defer C.free(unsafe.Pointer(channel_name))
-	var event = &EventData{
-		channel: C.GoString(channel_name),
-		data:    unsafe.Slice((*byte)(buf), int32(len)),
-		len:     int32(len),
+	//defer C.free(unsafe.Pointer(channel_name))
+	mtx.Lock()
+	defer mtx.Unlock()
+	//defer C.free(buf)
+	var event = &EpicsEventData{
+		Channel: C.GoString(channel_name),
+		Data:    unsafe.Slice((*byte)(buf), int32(len)),
+		Len:     int32(len),
 	}
-
-	fmt.Printf("goCallbackHandler for channel %s\n", event.channel)
+	if _, ok := epicsMonitorChannel[event.Channel]; !ok {
+		//no channel present
+		return
+	}
+	// push event into channel
+	epicsMonitorChannel[event.Channel] <- event
+	fmt.Printf("goCallbackHandler for channel %s\n", event.Channel)
 }
 
 // StartChannelMonitor monitoring data for a specified channel
-func StartChannelMonitor(channel string, data_channel chan<- EventData) error {
+func StartChannelMonitor(channel string, data_channel chan<- *EpicsEventData) error {
+	mtx.Lock()
+	defer mtx.Unlock()
+
+	if _, ok := epicsMonitorChannel[channel]; ok {
+		//already present
+		return ErrorChannelAlreadyRegistered
+	}
+
+	// add new channel
+	epicsMonitorChannel[channel] = data_channel
+
 	cstr := C.CString(channel)
-	defer C.free(unsafe.Pointer(cstr))
+	//defer C.free(unsafe.Pointer(cstr))
 	C.startMonitor(cstr)
+
 	return nil
 }
 
 // StopChannelMonitor
 func StopChannelMonitor(channel string) error {
 	cstr := C.CString(channel)
-	defer C.free(unsafe.Pointer(cstr))
+	//defer C.free(unsafe.Pointer(cstr))
 	C.stopMonitor(cstr)
 	return nil
 }
