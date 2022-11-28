@@ -6,15 +6,12 @@
     "configurations": [
         {
             "name": "unit_test",
-            "type": "cppdbg",
+            "type": "lldb",
             "request": "launch",
             "program": "${workspaceFolder}/build/unit_test",
             "args": [],
-            "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build/",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb"
+            "preRunCommands": ["settings set target.disable-aslr false"]
         },
         {
             "name": "Sciarc Gateway",
@@ -23,6 +20,16 @@
             "mode": "debug",
             "program": "${workspaceFolder}/main.go",
             "args": ["gateway"],
-        }
+            "env": {"CC":"clang","LD_LIBRARY_PATH":"$LD_LIBRRY_PATH:/workspace/build/local/lib/linux-x86_64"}
+        },
+        {
+            "name": "Launch Package",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${file}",
+            "env": {"CC":"clang","LD_LIBRARY_PATH":"$LD_LIBRRY_PATH:/workspace/build/local/lib/linux-x86_64"},
+            "showLog": true
+          }
     ]
 }

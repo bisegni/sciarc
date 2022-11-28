@@ -16,7 +16,8 @@ option(BUILD_SHARED_LIBS "Build using shared libraries" off)
 
 set(SOURCE_FILES
     engine/src/sciarc.cpp
-    engine/src/epics/epics.cpp
+    engine/src/epics/EpicsChannel.cpp
+    engine/src/epics/EpicsChannelMonitor.cpp
     )
 
 ADD_LIBRARY(
@@ -24,18 +25,25 @@ ADD_LIBRARY(
     ${SOURCE_FILES}
     )
 
-SET_TARGET_PROPERTIES(${PROJECT_NAME} 
-                        PROPERTIES PUBLIC_HEADER 
-                        engine/src/sciarc.h
-                        )
-install(TARGETS ${PROJECT_NAME}
-        PUBLIC_HEADER
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/include/sciarc
+file(GLOB_RECURSE SCIARC_INCLUDE "engine/src/*.h" "engine/src/epics/*.h")
+# SET_TARGET_PROPERTIES(${PROJECT_NAME} 
+#                         PROPERTIES 
+#                         PUBLIC_HEADER 
+#                         $SCIARC_INCLUDE
+#                         )
+# install(TARGETS ${PROJECT_NAME}
+#         PUBLIC_HEADER
+#         DESTINATION ${CMAKE_INSTALL_PREFIX}/include/sciarc
+# )
+set_target_properties(${PROJECT_NAME}
+    PROPERTIES
+    PUBLIC_HEADER "${SCIARC_INCLUDE}"
 )
 install(TARGETS ${PROJECT_NAME}
         #RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
-        #ARCHIVE DESTINATION lib/static
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION include/sciarc
         )
 
 TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PUBLIC engine/src)
@@ -45,6 +53,7 @@ TARGET_LINK_DIRECTORIES(${PROJECT_NAME} PUBLIC ${CMAKE_INSTALL_PREFIX}/lib)
 set(TEST_SOURCE_FILES
     engine/test/test.cpp
     engine/test/SciarcTest.cpp
+    engine/test/Epics.cpp
     )
 
 ADD_EXECUTABLE(
@@ -56,7 +65,7 @@ install(TARGETS unit_test
         #LIBRARY DESTINATION lib
         #ARCHIVE DESTINATION lib/static
         )
-
+TARGET_INCLUDE_DIRECTORIES(unit_test PUBLIC engine/src)
 TARGET_INCLUDE_DIRECTORIES(unit_test PUBLIC ${CMAKE_INSTALL_PREFIX}/include)
 TARGET_LINK_DIRECTORIES(unit_test PUBLIC ${CMAKE_INSTALL_PREFIX}/lib)
 TARGET_LINK_DIRECTORIES(unit_test PUBLIC ${CMAKE_INSTALL_PREFIX}/lib/linux-x86_64)
@@ -103,14 +112,12 @@ ExternalProject_Add(
     PREFIX ${CMAKE_CURRENT_BINARY_DIR}/epics
  	GIT_REPOSITORY https://github.com/epics-base/epics-base.git
     GIT_TAG origin/7.0
-      GIT_PROGRESS 1
-      BUILD_IN_SOURCE 1
-      PATCH_COMMAND echo ${PROJECT_SOURCE_DIR}/patch_epics.sh
-      CONFIGURE_COMMAND sed -i "s/STATIC_BUILD=NO/STATIC_BUILD=YES/g" ${CMAKE_CURRENT_BINARY_DIR}/epics/src/epics/configure/CONFIG_SITE
+    GIT_PROGRESS 1
+    BUILD_IN_SOURCE 1
+    PATCH_COMMAND ${PROJECT_SOURCE_DIR}/tools/epics_patch.sh ${CMAKE_CURRENT_BINARY_DIR}
+    CONFIGURE_COMMAND ""
 	UPDATE_COMMAND    ""
 	INSTALL_COMMAND   ""
-#      CONFIGURE_COMMAND "make -j 3 INSTALL_LOCATION=${CMAKE_INSTALL_PREFIX} install"
-#      BUILD_COMMAND "make -j 3 INSTALL_LOCATION=${CMAKE_INSTALL_PREFIX} install"
     BUILD_COMMAND make -j 3  INSTALL_LOCATION=${CMAKE_INSTALL_PREFIX} install
   )
 
@@ -119,10 +126,13 @@ SET(BUILD_LIBRARY ${BUILD_LIBRARY} )
 ADD_DEPENDENCIES(${PROJECT_NAME} epics)
 ADD_DEPENDENCIES(unit_test epics)
 TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PUBLIC ${CMAKE_INSTALL_PREFIX}/include/os/${CMAKE_SYSTEM_NAME})
-TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PUBLIC ${CMAKE_INSTALL_PREFIX}/include/compiler/gcc)
 TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PUBLIC ${CMAKE_INSTALL_PREFIX}/include/pv)
 TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PUBLIC ${CMAKE_INSTALL_PREFIX}/include/pva)
-
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PUBLIC ${CMAKE_INSTALL_PREFIX}/include/compiler/clang)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  # using GCC
+endif()
 #--------Google Test------
 message (STATUS "Setup GTest.")
 ExternalProject_Add(
@@ -138,7 +148,7 @@ ExternalProject_Add(
 )
 ADD_DEPENDENCIES(unit_test googletest)
 
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC ${BUILD_LIBRARY} pvaClient pvAccess pthread)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC ${BUILD_LIBRARY} pvaClient pvAccess Com pvData pvDatabase pvAccessCA pthread)
 TARGET_LINK_LIBRARIES(unit_test PUBLIC ${BUILD_LIBRARY} gtest sciarc )
 
 MESSAGE(STATUS "Install prefix: ${CMAKE_INSTALL_PREFIX}")
