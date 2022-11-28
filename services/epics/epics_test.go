@@ -11,3 +11,8 @@ func TestGetData(t *testing.T) {
 	assert.NotNil(t, err, "There not be an error")
 	assert.Equal(t, len(value) > 0, true, "The value need to be filled")
 }
+
+func TestMonitor(t *testing.T) {
+	StartChannelMonitor("variable:sum")
+	StopChannelMonitor("variable:sum")
+}

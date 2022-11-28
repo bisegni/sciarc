@@ -14,18 +14,38 @@ import (
 	"unsafe"
 )
 
+// EventData the data emitted by event monitor
+type EventData struct {
+	channel string
+	data    []byte
+	len     int32
+}
+
 //export goCallbackHandler
-func goCallbackHandler(channel_name *C.char, buff unsafe.Pointer, len C.int) {
-	fmt.Print("goCallbackHandler for channel" + C.GoString(channel_name))
+func goCallbackHandler(channel_name *C.char, buf unsafe.Pointer, len C.int) {
+	defer C.free(unsafe.Pointer(channel_name))
+	var event = &EventData{
+		channel: C.GoString(channel_name),
+		data:    unsafe.Slice((*byte)(buf), int32(len)),
+		len:     int32(len),
+	}
+
+	fmt.Printf("goCallbackHandler for channel %s\n", event.channel)
 }
 
 // StartChannelMonitor monitoring data for a specified channel
-func StartChannelMonitor(channel string) error {
+func StartChannelMonitor(channel string, data_channel chan<- EventData) error {
+	cstr := C.CString(channel)
+	defer C.free(unsafe.Pointer(cstr))
+	C.startMonitor(cstr)
 	return nil
 }
 
 // StopChannelMonitor
 func StopChannelMonitor(channel string) error {
+	cstr := C.CString(channel)
+	defer C.free(unsafe.Pointer(cstr))
+	C.stopMonitor(cstr)
 	return nil
 }
 
