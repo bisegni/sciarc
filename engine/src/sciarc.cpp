@@ -26,6 +26,8 @@ void ACFunction() {
 void eventHandler(const MonitorEventVecShrdPtr& event_data) {
 
   for(auto& iter: *event_data) {
+    // manage only data event
+    if(iter->type != Data) continue;
     std::string json_str;
     std::ostringstream json;
     //epics::pvData::printJSON(json, *iter->data);
