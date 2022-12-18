@@ -52,9 +52,9 @@ func StopMonitorChannel(channel string, conn_id int) {
 
 	idx := slices.IndexFunc(channelConnListener[channel], func(conn int) bool { return conn == conn_id })
 	if idx != -1 {
-		channelConnListener[channel] = append(channelConnListener[channel], conn_id)
-	} else {
 		channelConnListener[channel] = append(channelConnListener[channel][:idx], channelConnListener[channel][idx+1:]...)
+	} else {
+		return
 	}
 	if len(channelConnListener[channel]) == 0 {
 		epics.StopChannelMonitor(channel)
