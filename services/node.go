@@ -76,6 +76,7 @@ func (n *Node) Start() error {
 
 	n.dispatcher.RegisterApi(GetApiFactory{})
 	n.dispatcher.RegisterApi(StartMonitorApiFactory{})
+	n.dispatcher.RegisterApi(StopMonitorApiFactory{})
 
 	var opts = &websocket.ServerOptions{
 		Address:    "127.0.0.1:8000",
