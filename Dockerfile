@@ -1,7 +1,9 @@
 # See here for image contents: https://github.com/microsoft/vscode-dev-containers/tree/v0.234.0/containers/cpp/.devcontainer/base.Dockerfile
 
 # [Choice] Debian / Ubuntu version (use Debian 11, Ubuntu 18.04/22.04 on local arm64/Apple Silicon): debian-11, debian-10, ubuntu-22.04, ubuntu-20.04, ubuntu-18.04
-FROM golang:1.18-bullseye
+FROM golang:1.18-bullseye as builder
+
+
 
 # [Optional] Install CMake version different from what base image has already installed. 
 # CMake reinstall choices: none, 3.21.5, 3.22.2, or versions from https://cmake.org/download/
@@ -23,16 +25,40 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 
 # Install llvm
 COPY tools/llvm.sh /tmp/
-RUN chmod +x /tmp/llvm.sh && /tmp/llvm.sh
+RUN chmod +x /tmp/llvm.sh
+RUN /tmp/llvm.sh
+
 RUN update-alternatives --install /usr/bin/cc cc /usr/bin/clang-14 100
 RUN update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-14 100
 RUN update-alternatives --install /usr/bin/clang cc /usr/bin/clang-14 100
 RUN update-alternatives --install /usr/bin/clang++ c++ /usr/bin/clang++-14 100
 RUN update-alternatives --install /usr/bin/lldb lldb /usr/bin/lldb-14 100
 
-RUN apt -y install python3-pip
-RUN pip3 install conan
+RUN groupadd -g 1001 appuser
+RUN useradd -r -u 1001 -g appuser appuser
+RUN mkdir /opt/sciarc
+RUN chown appuser /opt/sciarc
 
-RUN useradd -rm -d /home/vscode -s /bin/bash -g root -G sudo -u 1001 vscode
-#USER vscode
-WORKDIR /home/vscode
+COPY . /opt/sciarc
+WORKDIR /opt/sciarc
+RUN mkdir build \
+    && cd build \
+    && cmake -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -GNinja .. \
+    && ninja \
+    && ninja install
+
+RUN cd /opt/sciarc \
+    && go mod tidy \
+    && go build
+
+
+from debian:bullseye
+
+RUN mkdir /opt/app
+WORKDIR /opt/app
+COPY --from=builder /opt/sciarc/build/local/lib /opt/app/lib
+COPY --from=builder /opt/sciarc/sciarc /opt/app
+ENV PATH="${PATH}:/opt/app"
+ENV LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/opt/app/lib:/opt/app/lib/linux-x86_64"
+EXPOSE 8000
+ENTRYPOINT ["sciarc"]
