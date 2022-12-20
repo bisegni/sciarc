@@ -38,4 +38,4 @@ jobs:
           context: .
           push: true
           tags: ${{ matrix.os.host }}
-          labels: ${{ steps.meta.outputs.labels }
+          labels: ${{ steps.meta.outputs.labels }}
