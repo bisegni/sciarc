@@ -79,7 +79,7 @@ func (n *Node) Start() error {
 	n.dispatcher.RegisterApi(StopMonitorApiFactory{})
 
 	var opts = &websocket.ServerOptions{
-		Address:    "127.0.0.1:8000",
+		Address:    "localhost:8000",
 		HandleBin:  n.handleBin,
 		HandleText: n.handleText,
 	}
