@@ -67,11 +67,19 @@ char* getData(const char *channel_name) {
 }
 
 void startMonitor(const char *channel_name) {
-  channel_monitoring->addChannel(channel_name);
+  try {
+    channel_monitoring->addChannel(channel_name);
+  } catch(...) {
+
+  }
 }
 
 void stopMonitor(const char *channel_name) {
-  channel_monitoring->removeChannel(channel_name);
+  try {
+    channel_monitoring->removeChannel(channel_name);
+  } catch(...) {
+
+  }
 }
 
 void deinit() {
