@@ -49,6 +49,7 @@ void putData(const std::string& name, T new_value) const {
     channel->put().set(name, new_value).exec();
 }
 void putData(const std::string& name, const epics::pvData::AnyScalar& value) const;
+void putData(const std::string& name, const std::string& value) const;
 void startMonitor();
 MonitorEventVecShrdPtr monitor();
 void stopMonitor();

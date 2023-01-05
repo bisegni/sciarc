@@ -75,6 +75,25 @@ TEST(EpicsTest, ChannelGetSetPVDatadGet) {
     EXPECT_EQ(retry_eq(*pc_sum, "value", 10, 500, 3), true);
 }
 
+TEST(EpicsTest, ChannelGetSetPVDataByString) {
+    std::unique_ptr<EpicsChannel> pc_sum;
+    std::unique_ptr<EpicsChannel> pc_a;
+    std::unique_ptr<EpicsChannel> pc_b;
+    epics::pvData::PVStructure::const_shared_pointer val;
+    EXPECT_NO_THROW(pc_sum = std::make_unique<EpicsChannel>("pva", "variable:sum"););
+    EXPECT_NO_THROW(pc_a = std::make_unique<EpicsChannel>("pva", "variable:a"););
+    EXPECT_NO_THROW(pc_b = std::make_unique<EpicsChannel>("pva", "variable:b"););
+    EXPECT_NO_THROW(pc_sum->connect());
+    EXPECT_NO_THROW(pc_a->connect());
+    EXPECT_NO_THROW(pc_b->connect());
+    EXPECT_NO_THROW(pc_a->putData("value", std::string("0")););
+    EXPECT_NO_THROW(pc_b->putData("value", std::string("0")););
+    EXPECT_EQ(retry_eq(*pc_sum, "value", 0, 500, 3), true);
+    EXPECT_NO_THROW(pc_a->putData("value", std::string("5")););
+    EXPECT_NO_THROW(pc_b->putData("value", std::string("5")););
+    EXPECT_EQ(retry_eq(*pc_sum, "value", 10, 500, 3), true);
+}
+
 TEST(EpicsTest, ChannelMonitor) {
     std::unique_ptr<EpicsChannel> pc_a;
     epics::pvData::PVStructure::const_shared_pointer val;

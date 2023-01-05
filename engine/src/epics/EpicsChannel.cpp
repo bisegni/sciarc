@@ -1,6 +1,7 @@
 #include<epics/EpicsChannel.h>
 #include <pv/caProvider.h>
 #include <pv/clientFactory.h>
+#include <pv/convert.h>
 
 namespace pvd = epics::pvData;
 namespace pva = epics::pvAccess;
@@ -34,6 +35,23 @@ EpicsChannel::getData() const {
 
 void EpicsChannel::putData(const std::string& name, const epics::pvData::AnyScalar& new_value) const{
     channel->put().set(name, new_value).exec();
+}
+
+void EpicsChannel::putData(const std::string& name, const std::string& value) const {
+    epics::pvData::AnyScalar  scalar;
+    const epics::pvData::FieldConstPtr &field = channel->get()->getSubField(name)->getField();
+    switch(field->getType()) {
+        case epics::pvData::scalar: {
+            channel->put().set(name, epics::pvData::AnyScalar(value)).exec();
+            break;
+        }
+
+        default:{
+            break;
+        }
+    }
+    // convert.fromString(scalar, value);
+    // channel->put().set(name, *scalar).exec();
 }
 
 void EpicsChannel::startMonitor() {
