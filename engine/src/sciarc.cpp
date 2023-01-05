@@ -66,6 +66,15 @@ char* getData(const char *channel_name) {
     return out;
 }
 
+void putData(const char *channel_name, const char *channel_value) {
+    std::ostringstream json;
+    auto channel = std::make_unique<EpicsChannel>("pva", std::string(channel_name));
+    channel->connect();
+    auto value = channel->getData();
+    if(!value) return;
+    channel->putData(channel_name, channel_value);
+}
+
 void startMonitor(const char *channel_name) {
   try {
     channel_monitoring->addChannel(channel_name);
